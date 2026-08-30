@@ -747,12 +747,15 @@ function AdminDashboard() {
                            </div>
                          )}
                        </td>
-                       <td className="px-4 py-4 text-muted-foreground">
-                         <div>{formatDateTime(s.updatedAt)}</div>
-                         {s.ipAddress && (
-                           <div className="font-mono text-xs">{s.ipAddress}</div>
-                         )}
-                       </td>
+                        <td className="px-4 py-4 text-muted-foreground">
+                          <div>{formatDateTime(s.updatedAt)}</div>
+                          {s.ipAddress && (
+                            <div className="font-mono text-xs">{s.ipAddress}</div>
+                          )}
+                          {s.country && (
+                            <div className="text-xs font-medium">{s.country}</div>
+                          )}
+                        </td>
                       <td className="px-4 py-4" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-end gap-1">
                           <button
