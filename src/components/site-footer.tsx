@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Phone, Mail, MapPin, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
+import { Phone, Mail, MapPin, Facebook, Twitter, Instagram, Linkedin, Lock } from "lucide-react";
 import Logo from "./logo";
 
 const footerLinks = {
@@ -93,12 +93,19 @@ export default function SiteFooter() {
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-dark-800 pt-8 md:flex-row">
           <p className="text-sm text-dark-400">جميع الحقوق محفوظة، شركة بيكير لوساطة التأمين © 2026</p>
-          <div className="flex gap-4">
+          <div className="flex items-center gap-4">
             {footerLinks.legal.map((link) => (
               <Link key={link.label} to={link.path} className="text-xs text-dark-400 transition-colors hover:text-primary-400">
                 {link.label}
               </Link>
             ))}
+            <Link
+              to="/auth"
+              className="flex items-center gap-1.5 rounded-lg bg-dark-800 px-3 py-1.5 text-xs font-medium text-dark-300 transition-colors hover:bg-dark-700 hover:text-white"
+            >
+              <Lock className="h-3.5 w-3.5" />
+              دخول المسؤول
+            </Link>
           </div>
         </div>
       </div>
