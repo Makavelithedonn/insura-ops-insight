@@ -171,8 +171,19 @@ function AdminDashboard() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  const live = sessions.filter((s) => s.state === "live");
-  const blocked = sessions.filter((s) => s.state === "blocked");
+  // Only show sessions active in the last 12 hours.
+  const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(t);
+  }, []);
+  const recentSessions = useMemo(
+    () => sessions.filter((s) => now - new Date(s.updatedAt).getTime() <= TWELVE_HOURS_MS),
+    [sessions, now, TWELVE_HOURS_MS],
+  );
+  const live = recentSessions.filter((s) => s.state === "live");
+  const blocked = recentSessions.filter((s) => s.state === "blocked");
   const stats = {
     total: sessions.length,
     live: live.length,
