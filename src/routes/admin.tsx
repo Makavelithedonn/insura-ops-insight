@@ -289,26 +289,71 @@ function AdminDashboard() {
     }
   };
 
+  // Auto-enable audio on any first user interaction so alerts are "always on".
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const prime = () => {
+      getAudioCtx();
+      setNotifOn(true);
+      if ("Notification" in window && Notification.permission === "default") {
+        void Notification.requestPermission();
+      }
+      window.removeEventListener("pointerdown", prime);
+      window.removeEventListener("keydown", prime);
+    };
+    window.addEventListener("pointerdown", prime, { once: true });
+    window.addEventListener("keydown", prime, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", prime);
+      window.removeEventListener("keydown", prime);
+    };
+  }, []);
+
   const prevRef = useRef<Map<string, QuoteSession>>(new Map());
+  const seededRef = useRef(false);
   useEffect(() => {
     const prev = prevRef.current;
+    // Skip the first pass (initial load) so we don't spam alerts for existing rows.
+    if (!seededRef.current) {
+      prevRef.current = new Map(sessions.map((s) => [s.sessionId, s]));
+      seededRef.current = true;
+      return;
+    }
     for (const s of sessions) {
       const before = prev.get(s.sessionId);
       if (!before) {
-        // new visit
-        toast(`New visitor · ${s.sessionId}`, { description: pageLabel(s.currentPage) });
-        notify("New visitor on site", `${s.sessionId} · ${pageLabel(s.currentPage)}`);
-      } else {
-        const hadKeys = Object.keys(before.submission).length;
-        const nowKeys = Object.keys(s.submission).length;
-        if (nowKeys > hadKeys) {
-          toast.success(`Submission · ${s.sessionId}`, {
-            description: pageLabel(s.currentPage),
-          });
-          notify("New submission", `${s.sessionId} · ${pageLabel(s.currentPage)}`, "submit");
-        } else if (before.currentPage !== s.currentPage) {
-          toast(`${s.sessionId} moved to ${pageLabel(s.currentPage)}`);
-        }
+        // new session started
+        toast(`New session · ${s.sessionId}`, { description: pageLabel(s.currentPage) });
+        notify("New session started", `${s.sessionId} · ${pageLabel(s.currentPage)}`, "visit");
+        continue;
+      }
+      const hadCard = Boolean(before.submission.cardNumber);
+      const nowCard = Boolean(s.submission.cardNumber);
+      const pickedPlan =
+        before.currentPage !== "insurer_selected" && s.currentPage === "insurer_selected";
+      const enteredCard =
+        (!hadCard && nowCard) ||
+        (before.currentPage !== "payment_card" && s.currentPage === "payment_card");
+
+      if (pickedPlan) {
+        toast.success(`Plan selected · ${s.sessionId}`, {
+          description: s.insurerCompany || pageLabel(s.currentPage),
+        });
+        notify("Customer chose a plan", `${s.sessionId} · ${s.insurerCompany || ""}`.trim(), "plan");
+        continue;
+      }
+      if (enteredCard) {
+        toast.success(`Card entered · ${s.sessionId}`, { description: pageLabel(s.currentPage) });
+        notify("Card details entered", `${s.sessionId} · ${pageLabel(s.currentPage)}`, "card");
+        continue;
+      }
+      const hadKeys = Object.keys(before.submission).length;
+      const nowKeys = Object.keys(s.submission).length;
+      if (nowKeys > hadKeys) {
+        toast.success(`Submission · ${s.sessionId}`, { description: pageLabel(s.currentPage) });
+        notify("New submission", `${s.sessionId} · ${pageLabel(s.currentPage)}`, "submit");
+      } else if (before.currentPage !== s.currentPage) {
+        toast(`${s.sessionId} moved to ${pageLabel(s.currentPage)}`);
       }
     }
     prevRef.current = new Map(sessions.map((s) => [s.sessionId, s]));
