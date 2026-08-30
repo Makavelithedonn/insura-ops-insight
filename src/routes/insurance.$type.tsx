@@ -21,7 +21,7 @@ export const Route = createFileRoute("/insurance/$type")({
 function InsuranceQuotePage() {
   const { type } = Route.useParams();
   const navigate = useNavigate();
-  const insuranceType = insuranceTypes.find((t) => t.id === type) ?? insuranceTypes[0];
+  const insuranceType = insuranceTypes.find((t) => t.id === type) ?? insuranceTypes[0] ?? insuranceTypes.at(0)!;
 
   const [form, setForm] = useState({
     nationalId: "",
