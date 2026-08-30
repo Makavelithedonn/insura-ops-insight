@@ -30,10 +30,16 @@ export function AdminSidebar({
   view,
   onChange,
   counts,
+  pages,
+  activePage,
+  onSelectPage,
 }: {
   view: AdminView;
   onChange: (v: AdminView) => void;
   counts: Partial<Record<AdminView, number>>;
+  pages: { key: string; label: string; count: number }[];
+  activePage: string | null;
+  onSelectPage: (key: string | null) => void;
 }) {
   return (
     <aside className="hidden w-64 shrink-0 flex-col border-r border-border bg-card lg:flex">
@@ -78,6 +84,48 @@ export function AdminSidebar({
           );
         })}
       </nav>
+
+      <div className="border-t border-border p-3">
+        <div className="flex items-center justify-between px-2 pb-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Pages · active users
+          </p>
+          {activePage && (
+            <button
+              onClick={() => onSelectPage(null)}
+              className="text-xs font-medium text-primary hover:underline"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+        <div className="space-y-0.5">
+          {pages.map((p) => {
+            const active = p.key === activePage;
+            return (
+              <button
+                key={p.key}
+                onClick={() => onSelectPage(active ? null : p.key)}
+                className={cn(
+                  "flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-xs transition-colors",
+                  active
+                    ? "bg-primary/10 font-medium text-primary"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                )}
+              >
+                <span
+                  className={cn(
+                    "size-1.5 rounded-full",
+                    p.count > 0 ? "bg-success" : "bg-border",
+                  )}
+                />
+                <span className="flex-1 truncate text-left">{p.label}</span>
+                <span className="tabular-nums">{p.count}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       <div className="border-t border-border p-4 text-xs text-muted-foreground">
         Personal identifiers are masked by default.
