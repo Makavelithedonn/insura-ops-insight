@@ -403,6 +403,7 @@ function AdminDashboard() {
             awaitingApproval: Boolean(r["awaiting_approval"]),
           };
           if (r["ip_address"]) s.ipAddress = String(r["ip_address"]);
+          if (r["country"]) s.country = String(r["country"]);
           if (r["requested_page"]) s.requestedPage = String(r["requested_page"]);
           return s;
         });
@@ -746,12 +747,15 @@ function AdminDashboard() {
                            </div>
                          )}
                        </td>
-                       <td className="px-4 py-4 text-muted-foreground">
-                         <div>{formatDateTime(s.updatedAt)}</div>
-                         {s.ipAddress && (
-                           <div className="font-mono text-xs">{s.ipAddress}</div>
-                         )}
-                       </td>
+                        <td className="px-4 py-4 text-muted-foreground">
+                          <div>{formatDateTime(s.updatedAt)}</div>
+                          {s.ipAddress && (
+                            <div className="font-mono text-xs">{s.ipAddress}</div>
+                          )}
+                          {s.country && (
+                            <div className="text-xs font-medium">{s.country}</div>
+                          )}
+                        </td>
                       <td className="px-4 py-4" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-end gap-1">
                           <button

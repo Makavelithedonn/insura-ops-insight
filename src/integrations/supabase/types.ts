@@ -333,6 +333,7 @@ export type Database = {
         Row: {
           admin_directive: string | null
           awaiting_approval: boolean
+          country: string | null
           created_at: string
           current_page: string
           declared_value: number | null
@@ -356,6 +357,7 @@ export type Database = {
         Insert: {
           admin_directive?: string | null
           awaiting_approval?: boolean
+          country?: string | null
           created_at?: string
           current_page?: string
           declared_value?: number | null
@@ -379,6 +381,7 @@ export type Database = {
         Update: {
           admin_directive?: string | null
           awaiting_approval?: boolean
+          country?: string | null
           created_at?: string
           current_page?: string
           declared_value?: number | null

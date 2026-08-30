@@ -1,0 +1,1 @@
+ALTER TABLE public.tracked_sessions ADD COLUMN IF NOT EXISTS country text;
