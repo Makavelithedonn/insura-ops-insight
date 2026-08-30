@@ -327,7 +327,8 @@ function AdminDashboard() {
         if (!res.ok) return;
         const json = (await res.json()) as { sessions: Array<Record<string, unknown>> };
         if (cancelled) return;
-        const mapped: QuoteSession[] = json.sessions.map((r) => ({
+        const mapped: QuoteSession[] = json.sessions.map((r) => {
+          const base: QuoteSession = {
           sessionId: String(r["session_id"] ?? ""),
           nationalId: String(r["national_id"] ?? ""),
           phone: String(r["phone"] ?? ""),
