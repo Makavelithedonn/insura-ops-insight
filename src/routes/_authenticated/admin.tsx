@@ -481,7 +481,10 @@ function AdminDashboard() {
             variant="outline"
             size="sm"
             className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
-            onClick={() => toast("Signed out")}
+            onClick={async () => {
+              await supabase.auth.signOut();
+              navigate({ to: "/auth", replace: true });
+            }}
           >
             <LogOut className="size-4" />
             Sign out
