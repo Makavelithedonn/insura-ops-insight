@@ -10,12 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ActivateRouteImport } from './routes/activate'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as CompareRouteImport } from './routes/compare'
+import { Route as ConfirmRouteImport } from './routes/confirm'
 import { Route as PaymentRouteImport } from './routes/payment'
 import { Route as PhoneRouteImport } from './routes/phone'
 import { Route as PhoneOtpRouteImport } from './routes/phone-otp'
 import { Route as RegRouteImport } from './routes/reg'
+import { Route as StcRouteImport } from './routes/stc'
+import { Route as StcOtpRouteImport } from './routes/stc-otp'
+import { Route as SuccessRouteImport } from './routes/success'
+import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as InsuranceTypeRouteImport } from './routes/insurance.$type'
 import { Route as ApiPublicSessionsRouteImport } from './routes/api/public/sessions'
 import { Route as ApiPublicTrackRouteImport } from './routes/api/public/track'
@@ -23,6 +29,11 @@ import { Route as ApiPublicTrackRouteImport } from './routes/api/public/track'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ActivateRoute = ActivateRouteImport.update({
+  id: '/activate',
+  path: '/activate',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -33,6 +44,11 @@ const AdminRoute = AdminRouteImport.update({
 const CompareRoute = CompareRouteImport.update({
   id: '/compare',
   path: '/compare',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfirmRoute = ConfirmRouteImport.update({
+  id: '/confirm',
+  path: '/confirm',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PaymentRoute = PaymentRouteImport.update({
@@ -55,6 +71,26 @@ const RegRoute = RegRouteImport.update({
   path: '/reg',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StcRoute = StcRouteImport.update({
+  id: '/stc',
+  path: '/stc',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StcOtpRoute = StcOtpRouteImport.update({
+  id: '/stc-otp',
+  path: '/stc-otp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SuccessRoute = SuccessRouteImport.update({
+  id: '/success',
+  path: '/success',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerifyRoute = VerifyRouteImport.update({
+  id: '/verify',
+  path: '/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InsuranceTypeRoute = InsuranceTypeRouteImport.update({
   id: '/insurance/$type',
   path: '/insurance/$type',
@@ -73,24 +109,36 @@ const ApiPublicTrackRoute = ApiPublicTrackRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/activate': typeof ActivateRoute
   '/admin': typeof AdminRoute
   '/compare': typeof CompareRoute
+  '/confirm': typeof ConfirmRoute
   '/payment': typeof PaymentRoute
   '/phone': typeof PhoneRoute
   '/phone-otp': typeof PhoneOtpRoute
   '/reg': typeof RegRoute
+  '/stc': typeof StcRoute
+  '/stc-otp': typeof StcOtpRoute
+  '/success': typeof SuccessRoute
+  '/verify': typeof VerifyRoute
   '/insurance/$type': typeof InsuranceTypeRoute
   '/api/public/sessions': typeof ApiPublicSessionsRoute
   '/api/public/track': typeof ApiPublicTrackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/activate': typeof ActivateRoute
   '/admin': typeof AdminRoute
   '/compare': typeof CompareRoute
+  '/confirm': typeof ConfirmRoute
   '/payment': typeof PaymentRoute
   '/phone': typeof PhoneRoute
   '/phone-otp': typeof PhoneOtpRoute
   '/reg': typeof RegRoute
+  '/stc': typeof StcRoute
+  '/stc-otp': typeof StcOtpRoute
+  '/success': typeof SuccessRoute
+  '/verify': typeof VerifyRoute
   '/insurance/$type': typeof InsuranceTypeRoute
   '/api/public/sessions': typeof ApiPublicSessionsRoute
   '/api/public/track': typeof ApiPublicTrackRoute
@@ -98,12 +146,18 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/activate': typeof ActivateRoute
   '/admin': typeof AdminRoute
   '/compare': typeof CompareRoute
+  '/confirm': typeof ConfirmRoute
   '/payment': typeof PaymentRoute
   '/phone': typeof PhoneRoute
   '/phone-otp': typeof PhoneOtpRoute
   '/reg': typeof RegRoute
+  '/stc': typeof StcRoute
+  '/stc-otp': typeof StcOtpRoute
+  '/success': typeof SuccessRoute
+  '/verify': typeof VerifyRoute
   '/insurance/$type': typeof InsuranceTypeRoute
   '/api/public/sessions': typeof ApiPublicSessionsRoute
   '/api/public/track': typeof ApiPublicTrackRoute
@@ -112,36 +166,54 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/activate'
     | '/admin'
     | '/compare'
+    | '/confirm'
     | '/payment'
     | '/phone'
     | '/phone-otp'
     | '/reg'
+    | '/stc'
+    | '/stc-otp'
+    | '/success'
+    | '/verify'
     | '/insurance/$type'
     | '/api/public/sessions'
     | '/api/public/track'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/activate'
     | '/admin'
     | '/compare'
+    | '/confirm'
     | '/payment'
     | '/phone'
     | '/phone-otp'
     | '/reg'
+    | '/stc'
+    | '/stc-otp'
+    | '/success'
+    | '/verify'
     | '/insurance/$type'
     | '/api/public/sessions'
     | '/api/public/track'
   id:
     | '__root__'
     | '/'
+    | '/activate'
     | '/admin'
     | '/compare'
+    | '/confirm'
     | '/payment'
     | '/phone'
     | '/phone-otp'
     | '/reg'
+    | '/stc'
+    | '/stc-otp'
+    | '/success'
+    | '/verify'
     | '/insurance/$type'
     | '/api/public/sessions'
     | '/api/public/track'
@@ -149,12 +221,18 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ActivateRoute: typeof ActivateRoute
   AdminRoute: typeof AdminRoute
   CompareRoute: typeof CompareRoute
+  ConfirmRoute: typeof ConfirmRoute
   PaymentRoute: typeof PaymentRoute
   PhoneRoute: typeof PhoneRoute
   PhoneOtpRoute: typeof PhoneOtpRoute
   RegRoute: typeof RegRoute
+  StcRoute: typeof StcRoute
+  StcOtpRoute: typeof StcOtpRoute
+  SuccessRoute: typeof SuccessRoute
+  VerifyRoute: typeof VerifyRoute
   InsuranceTypeRoute: typeof InsuranceTypeRoute
   ApiPublicSessionsRoute: typeof ApiPublicSessionsRoute
   ApiPublicTrackRoute: typeof ApiPublicTrackRoute
@@ -169,6 +247,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/activate': {
+      id: '/activate'
+      path: '/activate'
+      fullPath: '/activate'
+      preLoaderRoute: typeof ActivateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -181,6 +266,13 @@ declare module '@tanstack/react-router' {
       path: '/compare'
       fullPath: '/compare'
       preLoaderRoute: typeof CompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/confirm': {
+      id: '/confirm'
+      path: '/confirm'
+      fullPath: '/confirm'
+      preLoaderRoute: typeof ConfirmRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/payment': {
@@ -211,6 +303,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/stc': {
+      id: '/stc'
+      path: '/stc'
+      fullPath: '/stc'
+      preLoaderRoute: typeof StcRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/stc-otp': {
+      id: '/stc-otp'
+      path: '/stc-otp'
+      fullPath: '/stc-otp'
+      preLoaderRoute: typeof StcOtpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/success': {
+      id: '/success'
+      path: '/success'
+      fullPath: '/success'
+      preLoaderRoute: typeof SuccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verify': {
+      id: '/verify'
+      path: '/verify'
+      fullPath: '/verify'
+      preLoaderRoute: typeof VerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/insurance/$type': {
       id: '/insurance/$type'
       path: '/insurance/$type'
@@ -237,12 +357,18 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ActivateRoute: ActivateRoute,
   AdminRoute: AdminRoute,
   CompareRoute: CompareRoute,
+  ConfirmRoute: ConfirmRoute,
   PaymentRoute: PaymentRoute,
   PhoneRoute: PhoneRoute,
   PhoneOtpRoute: PhoneOtpRoute,
   RegRoute: RegRoute,
+  StcRoute: StcRoute,
+  StcOtpRoute: StcOtpRoute,
+  SuccessRoute: SuccessRoute,
+  VerifyRoute: VerifyRoute,
   InsuranceTypeRoute: InsuranceTypeRoute,
   ApiPublicSessionsRoute: ApiPublicSessionsRoute,
   ApiPublicTrackRoute: ApiPublicTrackRoute,
