@@ -61,6 +61,9 @@ export interface QuoteSession {
   createdAt: string;
   updatedAt: string;
   submission: Submission;
+  ipAddress?: string;
+  awaitingApproval?: boolean;
+  requestedPage?: string;
 }
 
 export const KSA_INSURERS = [

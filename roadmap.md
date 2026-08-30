@@ -11,3 +11,4 @@
 - [x] Restore public Home page at `/` (was redirecting to /admin); dashboard stays at /admin
 - [x] Make the admin dashboard left-to-right (dir="ltr") while the public site stays RTL Arabic
 - [ ] Split the public insurance website into a separate Lovable project sharing the same backend DB; document the connection steps
+- [x] Admin gate: every public page load waits for admin approve/reject/redirect via /api/public/gate + /api/public/control; IP + awaiting badge shown in dashboard

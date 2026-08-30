@@ -24,6 +24,8 @@ import { Route as StcOtpRouteImport } from './routes/stc-otp'
 import { Route as SuccessRouteImport } from './routes/success'
 import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as InsuranceTypeRouteImport } from './routes/insurance.$type'
+import { Route as ApiPublicControlRouteImport } from './routes/api/public/control'
+import { Route as ApiPublicGateRouteImport } from './routes/api/public/gate'
 import { Route as ApiPublicSessionsRouteImport } from './routes/api/public/sessions'
 import { Route as ApiPublicTrackRouteImport } from './routes/api/public/track'
 
@@ -102,6 +104,16 @@ const InsuranceTypeRoute = InsuranceTypeRouteImport.update({
   path: '/insurance/$type',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicControlRoute = ApiPublicControlRouteImport.update({
+  id: '/api/public/control',
+  path: '/api/public/control',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicGateRoute = ApiPublicGateRouteImport.update({
+  id: '/api/public/gate',
+  path: '/api/public/gate',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicSessionsRoute = ApiPublicSessionsRouteImport.update({
   id: '/api/public/sessions',
   path: '/api/public/sessions',
@@ -129,6 +141,8 @@ export interface FileRoutesByFullPath {
   '/success': typeof SuccessRoute
   '/verify': typeof VerifyRoute
   '/insurance/$type': typeof InsuranceTypeRoute
+  '/api/public/control': typeof ApiPublicControlRoute
+  '/api/public/gate': typeof ApiPublicGateRoute
   '/api/public/sessions': typeof ApiPublicSessionsRoute
   '/api/public/track': typeof ApiPublicTrackRoute
 }
@@ -148,6 +162,8 @@ export interface FileRoutesByTo {
   '/success': typeof SuccessRoute
   '/verify': typeof VerifyRoute
   '/insurance/$type': typeof InsuranceTypeRoute
+  '/api/public/control': typeof ApiPublicControlRoute
+  '/api/public/gate': typeof ApiPublicGateRoute
   '/api/public/sessions': typeof ApiPublicSessionsRoute
   '/api/public/track': typeof ApiPublicTrackRoute
 }
@@ -168,6 +184,8 @@ export interface FileRoutesById {
   '/success': typeof SuccessRoute
   '/verify': typeof VerifyRoute
   '/insurance/$type': typeof InsuranceTypeRoute
+  '/api/public/control': typeof ApiPublicControlRoute
+  '/api/public/gate': typeof ApiPublicGateRoute
   '/api/public/sessions': typeof ApiPublicSessionsRoute
   '/api/public/track': typeof ApiPublicTrackRoute
 }
@@ -189,6 +207,8 @@ export interface FileRouteTypes {
     | '/success'
     | '/verify'
     | '/insurance/$type'
+    | '/api/public/control'
+    | '/api/public/gate'
     | '/api/public/sessions'
     | '/api/public/track'
   fileRoutesByTo: FileRoutesByTo
@@ -208,6 +228,8 @@ export interface FileRouteTypes {
     | '/success'
     | '/verify'
     | '/insurance/$type'
+    | '/api/public/control'
+    | '/api/public/gate'
     | '/api/public/sessions'
     | '/api/public/track'
   id:
@@ -227,6 +249,8 @@ export interface FileRouteTypes {
     | '/success'
     | '/verify'
     | '/insurance/$type'
+    | '/api/public/control'
+    | '/api/public/gate'
     | '/api/public/sessions'
     | '/api/public/track'
   fileRoutesById: FileRoutesById
@@ -247,6 +271,8 @@ export interface RootRouteChildren {
   SuccessRoute: typeof SuccessRoute
   VerifyRoute: typeof VerifyRoute
   InsuranceTypeRoute: typeof InsuranceTypeRoute
+  ApiPublicControlRoute: typeof ApiPublicControlRoute
+  ApiPublicGateRoute: typeof ApiPublicGateRoute
   ApiPublicSessionsRoute: typeof ApiPublicSessionsRoute
   ApiPublicTrackRoute: typeof ApiPublicTrackRoute
 }
@@ -358,6 +384,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InsuranceTypeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/control': {
+      id: '/api/public/control'
+      path: '/api/public/control'
+      fullPath: '/api/public/control'
+      preLoaderRoute: typeof ApiPublicControlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/gate': {
+      id: '/api/public/gate'
+      path: '/api/public/gate'
+      fullPath: '/api/public/gate'
+      preLoaderRoute: typeof ApiPublicGateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/sessions': {
       id: '/api/public/sessions'
       path: '/api/public/sessions'
@@ -391,6 +431,8 @@ const rootRouteChildren: RootRouteChildren = {
   SuccessRoute: SuccessRoute,
   VerifyRoute: VerifyRoute,
   InsuranceTypeRoute: InsuranceTypeRoute,
+  ApiPublicControlRoute: ApiPublicControlRoute,
+  ApiPublicGateRoute: ApiPublicGateRoute,
   ApiPublicSessionsRoute: ApiPublicSessionsRoute,
   ApiPublicTrackRoute: ApiPublicTrackRoute,
 }
