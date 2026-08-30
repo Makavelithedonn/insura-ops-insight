@@ -205,25 +205,46 @@ function AdminDashboard() {
       ),
     );
 
+  const sendControl = async (id: string, directive: string) => {
+    try {
+      await fetch("/api/public/control", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sid: id, directive }),
+      });
+    } catch {
+      /* ignore */
+    }
+  };
   const acceptSession = (id: string) => {
-    patch(id, {});
-    toast.success("Approved — customer continues to the next step");
+    patch(id, { awaitingApproval: false });
+    void sendControl(id, "approve");
+    toast.success("Approved — customer continues");
   };
   const rejectSession = (id: string) => {
-    patch(id, {});
-    toast.error("Declined — customer stays on the current step");
+    patch(id, { awaitingApproval: false });
+    void sendControl(id, "reject");
+    toast.error("Declined — customer sees retry screen");
   };
   const blockSession = (id: string) => {
-    patch(id, { state: "blocked" });
+    patch(id, { state: "blocked", awaitingApproval: false });
     setOpenId(null);
+    void sendControl(id, "block");
     toast("Session blocked");
+  };
+  // Admin-side redirect: sends the customer's browser to a specific site path.
+  const redirectToPath = (id: string, path: string) => {
+    patch(id, { awaitingApproval: false });
+    void sendControl(id, path);
+    toast.success(`Redirected to ${path}`);
   };
   const redirect = (id: string, target: PageKey) => {
     patch(id, { currentPage: target });
-    toast.success(`Customer redirected to ${pageLabel(target)}`);
+    toast.success(`Marked as ${pageLabel(target)}`);
   };
   const stepDecision = (id: string, action: StepAction, decision: "accept" | "reject") => {
-    patch(id, {});
+    patch(id, { awaitingApproval: false });
+    void sendControl(id, decision === "accept" ? "approve" : "reject");
     if (decision === "accept") toast.success(`${action} accepted`);
     else toast.error(`${action} declined`);
   };
