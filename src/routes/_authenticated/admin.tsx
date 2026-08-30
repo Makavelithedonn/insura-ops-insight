@@ -179,18 +179,18 @@ function AdminDashboard() {
   const [refreshing, setRefreshing] = useState(false);
   const navigate = useNavigate();
 
-  // Only show sessions active in the last 12 hours.
-  const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
+  // Sessions considered "live" only when active within the last 5 minutes;
+  // older rows still count toward Total but not Live now.
+  const LIVE_WINDOW_MS = 5 * 60 * 1000;
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 60_000);
+    const t = setInterval(() => setNow(Date.now()), 15_000);
     return () => clearInterval(t);
   }, []);
-  const recentSessions = useMemo(
-    () => sessions.filter((s) => now - new Date(s.updatedAt).getTime() <= TWELVE_HOURS_MS),
-    [sessions, now, TWELVE_HOURS_MS],
-  );
-  const live = recentSessions.filter((s) => s.state === "live");
+  const recentSessions = sessions;
+  const isLive = (s: QuoteSession) =>
+    s.state === "live" && now - new Date(s.updatedAt).getTime() <= LIVE_WINDOW_MS;
+  const live = recentSessions.filter(isLive);
   const blocked = recentSessions.filter((s) => s.state === "blocked");
   const stats = {
     total: recentSessions.length,
@@ -486,7 +486,7 @@ function AdminDashboard() {
           </div>
           <div>
             <h1 className="text-xl font-semibold tracking-tight">Admin Dashboard</h1>
-            <p className="text-sm text-muted-foreground">Insurance Operations</p>
+            <p className="text-sm text-muted-foreground">Tameeni Care operations</p>
           </div>
         </div>
 
@@ -786,7 +786,7 @@ function AdminDashboard() {
                       onClick={() => setOpenId(s.sessionId)}
                       className="cursor-pointer border-t border-border transition-colors hover:bg-muted/40"
                     >
-                      <td className="px-4 py-4 font-mono text-sm">{s.sessionId}</td>
+                      <td className="px-4 py-4 font-mono text-sm">{s.sessionId.slice(0, 8)}</td>
                       <td className="px-4 py-4">
                         <div className="font-medium tabular-nums">
                           {maskNationalId(s.nationalId)}
