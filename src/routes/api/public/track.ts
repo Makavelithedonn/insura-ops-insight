@@ -58,6 +58,12 @@ export const Route = createFileRoute("/api/public/track")({
         }
         const { sid, type, page, data } = parsed.data;
 
+        // Capture the visitor's real IP (Cloudflare / proxy headers)
+        const ip =
+          request.headers.get("cf-connecting-ip") ||
+          request.headers.get("x-real-ip") ||
+          (request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null);
+
         const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
         const url = process.env["SUPABASE_URL"]!;
         const supabase = createClient(url, key, {
@@ -102,6 +108,7 @@ export const Route = createFileRoute("/api/public/track")({
         if (data?.declaredValue) row["declared_value"] = data.declaredValue;
         if (data?.insurerCompany) row["insurer_company"] = data.insurerCompany;
         if (data?.insurerOfferSar) row["insurer_offer_sar"] = data.insurerOfferSar;
+        if (ip) row["ip_address"] = ip;
 
         const { error } = await supabase
           .from("tracked_sessions")

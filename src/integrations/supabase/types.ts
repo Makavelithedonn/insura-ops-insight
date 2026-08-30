@@ -14,6 +14,321 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_comments: {
+        Row: {
+          admin_id: string | null
+          application_id: string
+          comment: string
+          created_at: string | null
+          id: string
+          is_read: boolean
+          step_id: string
+          step_key: string
+        }
+        Insert: {
+          admin_id?: string | null
+          application_id: string
+          comment: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean
+          step_id: string
+          step_key: string
+        }
+        Update: {
+          admin_id?: string | null
+          application_id?: string
+          comment?: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean
+          step_id?: string
+          step_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_comments_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_comments_step_id_fkey"
+            columns: ["step_id"]
+            isOneToOne: false
+            referencedRelation: "application_steps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      application_history: {
+        Row: {
+          actor: string | null
+          application_id: string
+          created_at: string | null
+          details: Json | null
+          event_type: string
+          id: string
+          step_key: string | null
+        }
+        Insert: {
+          actor?: string | null
+          application_id: string
+          created_at?: string | null
+          details?: Json | null
+          event_type: string
+          id?: string
+          step_key?: string | null
+        }
+        Update: {
+          actor?: string | null
+          application_id?: string
+          created_at?: string | null
+          details?: Json | null
+          event_type?: string
+          id?: string
+          step_key?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_history_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      application_steps: {
+        Row: {
+          application_id: string
+          created_at: string | null
+          data: Json | null
+          id: string
+          locked: boolean
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          step_key: string
+          step_order: number
+          submitted_at: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          application_id: string
+          created_at?: string | null
+          data?: Json | null
+          id?: string
+          locked?: boolean
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          step_key: string
+          step_order?: number
+          submitted_at?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          application_id?: string
+          created_at?: string | null
+          data?: Json | null
+          id?: string
+          locked?: boolean
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          step_key?: string
+          step_order?: number
+          submitted_at?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_steps_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      applications: {
+        Row: {
+          application_id: string
+          created_at: string | null
+          current_step: string | null
+          customer_id: string
+          id: string
+          insurance_type: string | null
+          last_activity_at: string | null
+          metadata: Json | null
+          overall_status: string
+          updated_at: string | null
+        }
+        Insert: {
+          application_id: string
+          created_at?: string | null
+          current_step?: string | null
+          customer_id: string
+          id?: string
+          insurance_type?: string | null
+          last_activity_at?: string | null
+          metadata?: Json | null
+          overall_status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          application_id?: string
+          created_at?: string | null
+          current_step?: string | null
+          customer_id?: string
+          id?: string
+          insurance_type?: string | null
+          last_activity_at?: string | null
+          metadata?: Json | null
+          overall_status?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          application_id: string
+          created_at: string | null
+          id: string
+          is_read: boolean
+          message: string
+          step_key: string | null
+          title: string
+          type: string
+        }
+        Insert: {
+          application_id: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean
+          message: string
+          step_key?: string | null
+          title: string
+          type: string
+        }
+        Update: {
+          application_id?: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean
+          message?: string
+          step_key?: string | null
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_actions: {
+        Row: {
+          action: string
+          admin_id: string | null
+          application_id: string
+          comment: string | null
+          created_at: string | null
+          id: string
+          step_id: string
+          step_key: string
+        }
+        Insert: {
+          action: string
+          admin_id?: string | null
+          application_id: string
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          step_id: string
+          step_key: string
+        }
+        Update: {
+          action?: string
+          admin_id?: string | null
+          application_id?: string
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          step_id?: string
+          step_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_actions_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_actions_step_id_fkey"
+            columns: ["step_id"]
+            isOneToOne: false
+            referencedRelation: "application_steps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      submission_versions: {
+        Row: {
+          application_id: string
+          data: Json | null
+          id: string
+          step_id: string
+          step_key: string
+          submitted_at: string | null
+          version_number: number
+        }
+        Insert: {
+          application_id: string
+          data?: Json | null
+          id?: string
+          step_id: string
+          step_key: string
+          submitted_at?: string | null
+          version_number?: number
+        }
+        Update: {
+          application_id?: string
+          data?: Json | null
+          id?: string
+          step_id?: string
+          step_key?: string
+          submitted_at?: string | null
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "submission_versions_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "submission_versions_step_id_fkey"
+            columns: ["step_id"]
+            isOneToOne: false
+            referencedRelation: "application_steps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tracked_sessions: {
         Row: {
           created_at: string
@@ -21,6 +336,7 @@ export type Database = {
           declared_value: number | null
           insurer_company: string | null
           insurer_offer_sar: number | null
+          ip_address: string | null
           model_year: number | null
           national_id: string | null
           phone: string | null
@@ -38,6 +354,7 @@ export type Database = {
           declared_value?: number | null
           insurer_company?: string | null
           insurer_offer_sar?: number | null
+          ip_address?: string | null
           model_year?: number | null
           national_id?: string | null
           phone?: string | null
@@ -55,6 +372,7 @@ export type Database = {
           declared_value?: number | null
           insurer_company?: string | null
           insurer_offer_sar?: number | null
+          ip_address?: string | null
           model_year?: number | null
           national_id?: string | null
           phone?: string | null
@@ -73,7 +391,42 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      approve_step: {
+        Args: {
+          p_admin_id?: string
+          p_application_id: string
+          p_comment?: string
+          p_step_key: string
+        }
+        Returns: undefined
+      }
+      reject_step: {
+        Args: {
+          p_admin_id?: string
+          p_application_id: string
+          p_comment?: string
+          p_step_key: string
+        }
+        Returns: undefined
+      }
+      request_changes_step: {
+        Args: {
+          p_admin_id?: string
+          p_application_id: string
+          p_comment?: string
+          p_step_key: string
+        }
+        Returns: undefined
+      }
+      unlock_step: {
+        Args: {
+          p_admin_id?: string
+          p_application_id: string
+          p_comment?: string
+          p_step_key: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
