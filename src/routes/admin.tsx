@@ -310,9 +310,71 @@ function AdminDashboard() {
       <div className="grid gap-6 lg:grid-cols-[17rem_1fr]">
         {/* Left sidebar */}
         <aside className="rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
-          <p className="px-2 pb-3 text-sm font-semibold">
-            Pages <span className="text-muted-foreground">· live traffic</span>
+          {/* Nav pages */}
+          <p className="px-2 pb-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+            Pages
           </p>
+          <nav className="mb-4 space-y-0.5">
+            {(
+              [
+                { key: "overview", label: "Overview", count: stats.total },
+                { key: "live", label: "Live sessions", count: stats.live },
+                { key: "queue", label: "Active users", count: queue.length },
+                {
+                  key: "cards",
+                  label: "Card submissions",
+                  count: stats.cardSubmissions,
+                },
+                { key: "blocked", label: "Blocked", count: stats.blocked },
+                { key: "connect", label: "Connect site", count: 0 },
+              ] as const
+            ).map((item) => {
+              const active =
+                (item.key === "live" && tab === "live") ||
+                (item.key === "blocked" && tab === "blocked") ||
+                (item.key === "overview" && tab === "all");
+              return (
+                <button
+                  key={item.key}
+                  onClick={() => {
+                    if (item.key === "overview") setTab("all");
+                    else if (item.key === "live") setTab("live");
+                    else if (item.key === "blocked") setTab("blocked");
+                    else if (item.key === "queue")
+                      document
+                        .getElementById("active-users-queue")
+                        ?.scrollIntoView({ behavior: "smooth" });
+                    else if (item.key === "connect")
+                      document
+                        .getElementById("connect-panel")
+                        ?.scrollIntoView({ behavior: "smooth" });
+                    else if (item.key === "cards") setTab("all");
+                  }}
+                  className={cn(
+                    "flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm font-medium transition-colors",
+                    active
+                      ? "bg-foreground text-background"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  )}
+                >
+                  <span>{item.label}</span>
+                  <span
+                    className={cn(
+                      "rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums",
+                      active ? "bg-background/20" : "bg-muted",
+                    )}
+                  >
+                    {item.count}
+                  </span>
+                </button>
+              );
+            })}
+          </nav>
+
+          <p className="border-t border-border px-2 pb-3 pt-4 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+            Live traffic
+          </p>
+
 
           <button
             onClick={() => setPageFilter("all")}
