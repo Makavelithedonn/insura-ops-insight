@@ -1,4 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
+
+async function authHeaders(): Promise<Record<string, string>> {
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -101,7 +108,7 @@ function notify(
   }
 }
 
-export const Route = createFileRoute("/admin")({
+export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
       { title: "Insurance Operations Dashboard" },
@@ -170,6 +177,7 @@ function AdminDashboard() {
   const [pageFilter, setPageFilter] = useState<PageKey | "all">("all");
   const [openId, setOpenId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const navigate = useNavigate();
 
   // Only show sessions active in the last 12 hours.
   const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
@@ -231,7 +239,7 @@ function AdminDashboard() {
     try {
       await fetch("/api/public/control", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify({ sid: id, directive }),
       });
     } catch {
@@ -390,7 +398,10 @@ function AdminDashboard() {
     let cancelled = false;
     const load = async () => {
       try {
-        const res = await fetch("/api/public/sessions", { cache: "no-store" });
+        const res = await fetch("/api/public/sessions", {
+          cache: "no-store",
+          headers: await authHeaders(),
+        });
         if (!res.ok) return;
         const json = (await res.json()) as { sessions: Array<Record<string, unknown>> };
         if (cancelled) return;
@@ -471,7 +482,10 @@ function AdminDashboard() {
             variant="outline"
             size="sm"
             className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
-            onClick={() => toast("Signed out")}
+            onClick={async () => {
+              await supabase.auth.signOut();
+              navigate({ to: "/auth", replace: true });
+            }}
           >
             <LogOut className="size-4" />
             Sign out

@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { createClient } from "@supabase/supabase-js";
+import { makeServiceClient, verifyAdmin } from "@/lib/admin-api.server";
 import { z } from "zod";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "content-type",
+  "Access-Control-Allow-Headers": "content-type, authorization",
 };
 
 const BodySchema = z.object({
@@ -15,21 +15,7 @@ const BodySchema = z.object({
 });
 
 function makeClient() {
-  const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
-  const url = process.env["SUPABASE_URL"]!;
-  return createClient(url, key, {
-    auth: { persistSession: false, autoRefreshToken: false },
-    global: {
-      fetch: (input, init) => {
-        const h = new Headers(init?.headers);
-        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) {
-          h.delete("Authorization");
-        }
-        h.set("apikey", key);
-        return fetch(input, { ...init, headers: h });
-      },
-    },
-  });
+  return makeServiceClient();
 }
 
 export const Route = createFileRoute("/api/public/control")({
@@ -37,6 +23,9 @@ export const Route = createFileRoute("/api/public/control")({
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: cors }),
       POST: async ({ request }) => {
+        if (!(await verifyAdmin(request))) {
+          return new Response("Unauthorized", { status: 401, headers: cors });
+        }
         let json: unknown;
         try {
           json = await request.json();

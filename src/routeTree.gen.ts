@@ -10,8 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as ActivateRouteImport } from './routes/activate'
-import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as ConfirmRouteImport } from './routes/confirm'
 import { Route as OtpRouteImport } from './routes/otp'
@@ -23,6 +24,7 @@ import { Route as StcRouteImport } from './routes/stc'
 import { Route as StcOtpRouteImport } from './routes/stc-otp'
 import { Route as SuccessRouteImport } from './routes/success'
 import { Route as VerifyRouteImport } from './routes/verify'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as InsuranceTypeRouteImport } from './routes/insurance.$type'
 import { Route as ApiPublicControlRouteImport } from './routes/api/public/control'
 import { Route as ApiPublicGateRouteImport } from './routes/api/public/gate'
@@ -34,14 +36,18 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ActivateRoute = ActivateRouteImport.update({
   id: '/activate',
   path: '/activate',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompareRoute = CompareRouteImport.update({
@@ -99,6 +105,11 @@ const VerifyRoute = VerifyRouteImport.update({
   path: '/verify',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const InsuranceTypeRoute = InsuranceTypeRouteImport.update({
   id: '/insurance/$type',
   path: '/insurance/$type',
@@ -128,7 +139,7 @@ const ApiPublicTrackRoute = ApiPublicTrackRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/activate': typeof ActivateRoute
-  '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
   '/compare': typeof CompareRoute
   '/confirm': typeof ConfirmRoute
   '/otp': typeof OtpRoute
@@ -140,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/stc-otp': typeof StcOtpRoute
   '/success': typeof SuccessRoute
   '/verify': typeof VerifyRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/insurance/$type': typeof InsuranceTypeRoute
   '/api/public/control': typeof ApiPublicControlRoute
   '/api/public/gate': typeof ApiPublicGateRoute
@@ -149,7 +161,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/activate': typeof ActivateRoute
-  '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
   '/compare': typeof CompareRoute
   '/confirm': typeof ConfirmRoute
   '/otp': typeof OtpRoute
@@ -161,6 +173,7 @@ export interface FileRoutesByTo {
   '/stc-otp': typeof StcOtpRoute
   '/success': typeof SuccessRoute
   '/verify': typeof VerifyRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/insurance/$type': typeof InsuranceTypeRoute
   '/api/public/control': typeof ApiPublicControlRoute
   '/api/public/gate': typeof ApiPublicGateRoute
@@ -170,8 +183,9 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/activate': typeof ActivateRoute
-  '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
   '/compare': typeof CompareRoute
   '/confirm': typeof ConfirmRoute
   '/otp': typeof OtpRoute
@@ -183,6 +197,7 @@ export interface FileRoutesById {
   '/stc-otp': typeof StcOtpRoute
   '/success': typeof SuccessRoute
   '/verify': typeof VerifyRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/insurance/$type': typeof InsuranceTypeRoute
   '/api/public/control': typeof ApiPublicControlRoute
   '/api/public/gate': typeof ApiPublicGateRoute
@@ -194,7 +209,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/activate'
-    | '/admin'
+    | '/auth'
     | '/compare'
     | '/confirm'
     | '/otp'
@@ -206,6 +221,7 @@ export interface FileRouteTypes {
     | '/stc-otp'
     | '/success'
     | '/verify'
+    | '/admin'
     | '/insurance/$type'
     | '/api/public/control'
     | '/api/public/gate'
@@ -215,7 +231,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/activate'
-    | '/admin'
+    | '/auth'
     | '/compare'
     | '/confirm'
     | '/otp'
@@ -227,6 +243,7 @@ export interface FileRouteTypes {
     | '/stc-otp'
     | '/success'
     | '/verify'
+    | '/admin'
     | '/insurance/$type'
     | '/api/public/control'
     | '/api/public/gate'
@@ -235,8 +252,9 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
     | '/activate'
-    | '/admin'
+    | '/auth'
     | '/compare'
     | '/confirm'
     | '/otp'
@@ -248,6 +266,7 @@ export interface FileRouteTypes {
     | '/stc-otp'
     | '/success'
     | '/verify'
+    | '/_authenticated/admin'
     | '/insurance/$type'
     | '/api/public/control'
     | '/api/public/gate'
@@ -257,8 +276,9 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   ActivateRoute: typeof ActivateRoute
-  AdminRoute: typeof AdminRoute
+  AuthRoute: typeof AuthRoute
   CompareRoute: typeof CompareRoute
   ConfirmRoute: typeof ConfirmRoute
   OtpRoute: typeof OtpRoute
@@ -286,6 +306,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/activate': {
       id: '/activate'
       path: '/activate'
@@ -293,11 +320,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ActivateRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/compare': {
@@ -377,6 +404,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/insurance/$type': {
       id: '/insurance/$type'
       path: '/insurance/$type'
@@ -415,10 +449,22 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   ActivateRoute: ActivateRoute,
-  AdminRoute: AdminRoute,
+  AuthRoute: AuthRoute,
   CompareRoute: CompareRoute,
   ConfirmRoute: ConfirmRoute,
   OtpRoute: OtpRoute,
