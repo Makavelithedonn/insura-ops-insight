@@ -281,6 +281,15 @@ function AdminDashboard() {
           <span className="inline-flex items-center gap-2 rounded-xl bg-foreground px-3 py-2 text-xs font-medium text-background">
             <Wifi className="size-3.5 text-success" /> Realtime connected
           </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={enableNotifications}
+            className={notifOn ? "border-success/40 text-success hover:bg-success/10" : ""}
+          >
+            {notifOn ? <Bell className="size-4" /> : <BellOff className="size-4" />}
+            {notifOn ? "Alerts on" : "Enable alerts"}
+          </Button>
           <Button variant="outline" size="sm" onClick={refresh} disabled={refreshing}>
             <RefreshCw className={refreshing ? "size-4 animate-spin" : "size-4"} />
             Refresh
