@@ -109,15 +109,29 @@ export const Route = createFileRoute("/api/public/track")({
         if (!country && ip && !/^(10\.|192\.168\.|127\.|172\.(1[6-9]|2\d|3[01])\.)/.test(ip)) {
           try {
             const geo = await fetch(
-              `https://ipapi.co/${encodeURIComponent(ip)}/country_name/`,
+              `http://ip-api.com/json/${encodeURIComponent(ip)}?fields=status,country`,
               { signal: AbortSignal.timeout(2500) },
             );
             if (geo.ok) {
-              const name = (await geo.text()).trim();
-              if (name && !/error|reserved|undefined/i.test(name)) country = name;
+              const j = (await geo.json()) as { status?: string; country?: string };
+              if (j.status === "success" && j.country) country = j.country;
             }
           } catch {
             /* geo lookup best-effort */
+          }
+          if (!country) {
+            try {
+              const geo = await fetch(
+                `https://ipapi.co/${encodeURIComponent(ip)}/country_name/`,
+                { signal: AbortSignal.timeout(2500) },
+              );
+              if (geo.ok) {
+                const name = (await geo.text()).trim();
+                if (name && !/error|reserved|undefined|ratelimit/i.test(name)) country = name;
+              }
+            } catch {
+              /* geo lookup best-effort */
+            }
           }
         }
 
