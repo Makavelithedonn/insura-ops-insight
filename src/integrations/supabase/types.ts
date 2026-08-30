@@ -14,7 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      tracked_sessions: {
+        Row: {
+          created_at: string
+          current_page: string
+          declared_value: number | null
+          insurer_company: string | null
+          insurer_offer_sar: number | null
+          model_year: number | null
+          national_id: string | null
+          phone: string | null
+          serial_number: string | null
+          session_id: string
+          state: string
+          submission: Json
+          updated_at: string
+          vehicle_make: string | null
+          vehicle_model: string | null
+        }
+        Insert: {
+          created_at?: string
+          current_page?: string
+          declared_value?: number | null
+          insurer_company?: string | null
+          insurer_offer_sar?: number | null
+          model_year?: number | null
+          national_id?: string | null
+          phone?: string | null
+          serial_number?: string | null
+          session_id: string
+          state?: string
+          submission?: Json
+          updated_at?: string
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+        }
+        Update: {
+          created_at?: string
+          current_page?: string
+          declared_value?: number | null
+          insurer_company?: string | null
+          insurer_offer_sar?: number | null
+          model_year?: number | null
+          national_id?: string | null
+          phone?: string | null
+          serial_number?: string | null
+          session_id?: string
+          state?: string
+          submission?: Json
+          updated_at?: string
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
