@@ -717,7 +717,8 @@ function AdminDashboard() {
                   {filtered.map((s) => (
                     <tr
                       key={s.sessionId}
-                      className="border-t border-border transition-colors hover:bg-muted/40"
+                      onClick={() => setOpenId(s.sessionId)}
+                      className="cursor-pointer border-t border-border transition-colors hover:bg-muted/40"
                     >
                       <td className="px-4 py-4 font-mono text-sm">{s.sessionId}</td>
                       <td className="px-4 py-4">
@@ -751,7 +752,7 @@ function AdminDashboard() {
                            <div className="font-mono text-xs">{s.ipAddress}</div>
                          )}
                        </td>
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-4" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => acceptSession(s.sessionId)}
@@ -767,12 +768,7 @@ function AdminDashboard() {
                           >
                             <Ban className="size-4" />
                           </button>
-                          <button
-                            onClick={() => setOpenId(s.sessionId)}
-                            className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-                          >
-                            Open <ChevronRight className="size-4" />
-                          </button>
+                          <ChevronRight className="size-4 text-muted-foreground" />
                         </div>
                       </td>
                     </tr>
