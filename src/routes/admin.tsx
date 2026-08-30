@@ -58,11 +58,18 @@ function getAudioCtx(): AudioContext | null {
   return audioCtx;
 }
 
-/** Short two-tone chime. `kind` picks the pitch pair. */
-function playSound(kind: "visit" | "submit" = "visit") {
+/** Short chime. `kind` picks the pitch set. */
+function playSound(kind: "visit" | "submit" | "plan" | "card" = "visit") {
   const ctx = getAudioCtx();
   if (!ctx) return;
-  const notes = kind === "submit" ? [660, 990] : [523.25, 784];
+  const notes =
+    kind === "card"
+      ? [880, 1320, 1760]
+      : kind === "plan"
+        ? [523.25, 659.25, 987.77]
+        : kind === "submit"
+          ? [660, 990]
+          : [523.25, 784];
   notes.forEach((freq, i) => {
     const t = ctx.currentTime + i * 0.14;
     const osc = ctx.createOscillator();
@@ -70,15 +77,19 @@ function playSound(kind: "visit" | "submit" = "visit") {
     osc.type = "sine";
     osc.frequency.setValueAtTime(freq, t);
     gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.exponentialRampToValueAtTime(0.18, t + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+    gain.gain.exponentialRampToValueAtTime(0.22, t + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.24);
     osc.connect(gain).connect(ctx.destination);
     osc.start(t);
-    osc.stop(t + 0.25);
+    osc.stop(t + 0.28);
   });
 }
 
-function notify(title: string, body: string, kind: "visit" | "submit" = "visit") {
+function notify(
+  title: string,
+  body: string,
+  kind: "visit" | "submit" | "plan" | "card" = "visit",
+) {
   if (typeof window === "undefined") return;
   playSound(kind);
   if ("Notification" in window && Notification.permission === "granted") {
