@@ -42,13 +42,13 @@ function InsuranceQuotePage() {
     e.preventDefault();
     setError("");
     setLoading(true);
-    const res = await createApplication(type);
-    if (!res.success) {
-      setError(res.error || "حدث خطأ، حاول مرة أخرى");
+    const app = await createApplication(type);
+    if (!app) {
+      setError("حدث خطأ أثناء إنشاء الطلب، حاول مرة أخرى");
       setLoading(false);
       return;
     }
-    const submit = await submitStep("insurance_quote", form);
+    const submit = await submitStep(app.application.application_id, "insurance_quote", form);
     if (!submit.success) {
       setError(submit.error || "حدث خطأ، حاول مرة أخرى");
       setLoading(false);
