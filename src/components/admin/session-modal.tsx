@@ -99,6 +99,10 @@ export function SessionModal({
                 {session.insurerCompany} · {formatSar(session.insurerOfferSar)}
               </Row>
               <Row label="Current page">{pageLabel(session.currentPage)}</Row>
+              <Row label="IP address">
+                <span className="font-mono">{session.ipAddress ?? "—"}</span>
+              </Row>
+              <Row label="Country">{session.country ?? "—"}</Row>
             </dl>
           </div>
 
