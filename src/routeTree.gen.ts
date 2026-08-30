@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as ActivateRouteImport } from './routes/activate'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CompareRouteImport } from './routes/compare'
@@ -33,6 +34,10 @@ import { Route as ApiPublicTrackRouteImport } from './routes/api/public/track'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ActivateRoute = ActivateRouteImport.update({
@@ -101,9 +106,9 @@ const VerifyRoute = VerifyRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
-  id: '/_authenticated/admin',
+  id: '/admin',
   path: '/admin',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const InsuranceTypeRoute = InsuranceTypeRouteImport.update({
   id: '/insurance/$type',
@@ -178,6 +183,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/activate': typeof ActivateRoute
   '/auth': typeof AuthRoute
   '/compare': typeof CompareRoute
@@ -246,6 +252,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
     | '/activate'
     | '/auth'
     | '/compare'
@@ -269,6 +276,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   ActivateRoute: typeof ActivateRoute
   AuthRoute: typeof AuthRoute
   CompareRoute: typeof CompareRoute
@@ -282,7 +290,6 @@ export interface RootRouteChildren {
   StcOtpRoute: typeof StcOtpRoute
   SuccessRoute: typeof SuccessRoute
   VerifyRoute: typeof VerifyRoute
-  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   InsuranceTypeRoute: typeof InsuranceTypeRoute
   ApiPublicControlRoute: typeof ApiPublicControlRoute
   ApiPublicGateRoute: typeof ApiPublicGateRoute
@@ -297,6 +304,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/activate': {
@@ -395,7 +409,7 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/insurance/$type': {
       id: '/insurance/$type'
@@ -435,8 +449,20 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   ActivateRoute: ActivateRoute,
   AuthRoute: AuthRoute,
   CompareRoute: CompareRoute,
@@ -450,7 +476,6 @@ const rootRouteChildren: RootRouteChildren = {
   StcOtpRoute: StcOtpRoute,
   SuccessRoute: SuccessRoute,
   VerifyRoute: VerifyRoute,
-  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   InsuranceTypeRoute: InsuranceTypeRoute,
   ApiPublicControlRoute: ApiPublicControlRoute,
   ApiPublicGateRoute: ApiPublicGateRoute,
