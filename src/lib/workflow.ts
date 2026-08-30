@@ -256,6 +256,37 @@ export function canEditStep(step: ApplicationStepRow | null): boolean {
   return step.status === "draft" || step.status === "changes_requested" || step.status === "rejected";
 }
 
+// Convenience wrappers that read the active application from localStorage.
+export async function submitCurrentStep(
+  stepKey: string,
+  data: Record<string, unknown>,
+): Promise<{ success: boolean; error?: string }> {
+  const id = getStoredApplicationId();
+  if (!id) return { success: false, error: "لا يوجد طلب نشط، ابدأ من جديد" };
+  return submitStep(id, stepKey, data);
+}
+
+export async function setInsurer(companyName: string, priceSar: number): Promise<void> {
+  const id = getStoredApplicationId();
+  if (!id) return;
+  const { data: app } = await supabase
+    .from("applications")
+    .select("id, metadata")
+    .eq("application_id", id)
+    .maybeSingle();
+  if (!app) return;
+  const meta = { ...(app.metadata as Record<string, unknown> ?? {}), insurer_company: companyName, insurer_offer_sar: priceSar };
+  await supabase
+    .from("applications")
+    .update({
+      metadata: meta as never,
+      current_step: "insurer_selected",
+      last_activity_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", app.id);
+}
+
 export async function updateCurrentStep(applicationId: string, stepKey: string): Promise<void> {
   const { data: app } = await supabase
     .from("applications")
