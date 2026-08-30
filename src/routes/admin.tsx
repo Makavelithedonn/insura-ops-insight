@@ -47,11 +47,43 @@ function nextPage(p: PageKey): PageKey {
   const i = PAGE_ORDER.indexOf(p);
   return i < 0 || i === PAGE_ORDER.length - 1 ? p : PAGE_ORDER[i + 1]!;
 }
-function notify(title: string, body: string) {
+let audioCtx: AudioContext | null = null;
+function getAudioCtx(): AudioContext | null {
+  if (typeof window === "undefined") return null;
+  const Ctor =
+    window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+  if (!Ctor) return null;
+  if (!audioCtx) audioCtx = new Ctor();
+  if (audioCtx.state === "suspended") void audioCtx.resume();
+  return audioCtx;
+}
+
+/** Short two-tone chime. `kind` picks the pitch pair. */
+function playSound(kind: "visit" | "submit" = "visit") {
+  const ctx = getAudioCtx();
+  if (!ctx) return;
+  const notes = kind === "submit" ? [660, 990] : [523.25, 784];
+  notes.forEach((freq, i) => {
+    const t = ctx.currentTime + i * 0.14;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(freq, t);
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(0.18, t + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.25);
+  });
+}
+
+function notify(title: string, body: string, kind: "visit" | "submit" = "visit") {
   if (typeof window === "undefined") return;
+  playSound(kind);
   if ("Notification" in window && Notification.permission === "granted") {
     try {
-      new Notification(title, { body, icon: "/favicon.ico" });
+      new Notification(title, { body, icon: "/favicon.ico", silent: true });
     } catch {
       /* ignore */
     }
