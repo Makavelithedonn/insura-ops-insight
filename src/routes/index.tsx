@@ -108,7 +108,7 @@ function HomePage() {
                   إصدار فوري وربط مباشر بنجم.
                 </p>
                 <div className="flex flex-wrap gap-4">
-                  <Link to="/insurance/car" className="btn-accent">
+                  <Link to="/insurance/$type" params={{ type: "car" }} className="btn-accent">
                     احصل على عرض سعر
                     <ArrowLeft className="h-5 w-5" />
                   </Link>
@@ -249,7 +249,8 @@ function HomePage() {
                 return (
                   <Link
                     key={type.id}
-                    to={`/insurance/${type.id}`}
+                    to="/insurance/$type"
+                    params={{ type: type.id }}
                     className="group card hover:scale-[1.02]"
                   >
                     <div
@@ -389,7 +390,7 @@ function HomePage() {
                     خصومات لبعض القطاعات الحكومية وشبه الحكومية والخاصة. عروض تفهمك وتضبطك.
                   </p>
                 </div>
-                <Link to="/insurance/car" className="btn-accent whitespace-nowrap">
+                <Link to="/insurance/$type" params={{ type: "car" }} className="btn-accent whitespace-nowrap">
                   احصل على خصمك الآن
                   <ArrowLeft className="h-5 w-5" />
                 </Link>
@@ -444,7 +445,7 @@ function HomePage() {
                 تأمينك في دقيقة. نقارن لك كل عروض الأسعار بشكل فوري من كل شركات التأمين.
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-4">
-                <Link to="/insurance/car" className="btn-accent">
+                <Link to="/insurance/$type" params={{ type: "car" }} className="btn-accent">
                   ابدأ المقارنة الآن
                   <ArrowLeft className="h-5 w-5" />
                 </Link>
