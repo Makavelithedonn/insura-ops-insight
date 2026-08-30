@@ -204,6 +204,65 @@ function AdminDashboard() {
     }, 500);
   };
 
+  // Notifications: request permission + track new visits / submissions.
+  const [notifOn, setNotifOn] = useState(false);
+  const enableNotifications = async () => {
+    if (typeof window === "undefined" || !("Notification" in window)) {
+      toast.error("Browser notifications not supported");
+      return;
+    }
+    const perm =
+      Notification.permission === "default"
+        ? await Notification.requestPermission()
+        : Notification.permission;
+    if (perm === "granted") {
+      setNotifOn(true);
+      toast.success("Notifications enabled");
+    } else {
+      toast.error("Notification permission denied");
+    }
+  };
+
+  const prevRef = useRef<Map<string, QuoteSession>>(new Map());
+  useEffect(() => {
+    const prev = prevRef.current;
+    for (const s of sessions) {
+      const before = prev.get(s.sessionId);
+      if (!before) {
+        // new visit
+        toast(`New visitor · ${s.sessionId}`, { description: pageLabel(s.currentPage) });
+        notify("New visitor on site", `${s.sessionId} · ${pageLabel(s.currentPage)}`);
+      } else {
+        const hadKeys = Object.keys(before.submission).length;
+        const nowKeys = Object.keys(s.submission).length;
+        if (nowKeys > hadKeys) {
+          toast.success(`Submission · ${s.sessionId}`, {
+            description: pageLabel(s.currentPage),
+          });
+          notify("New submission", `${s.sessionId} · ${pageLabel(s.currentPage)}`);
+        } else if (before.currentPage !== s.currentPage) {
+          toast(`${s.sessionId} moved to ${pageLabel(s.currentPage)}`);
+        }
+      }
+    }
+    prevRef.current = new Map(sessions.map((s) => [s.sessionId, s]));
+  }, [sessions]);
+
+  // Active users queue: live sessions sorted by most recent update.
+  const queue = useMemo(
+    () =>
+      [...live].sort(
+        (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+      ),
+    [live],
+  );
+  const acceptToNext = (s: QuoteSession) => {
+    const target = nextPage(s.currentPage);
+    patch(s.sessionId, { currentPage: target });
+    toast.success(`${s.sessionId} → ${pageLabel(target)}`);
+  };
+
+
   return (
     <div className="min-h-screen bg-background px-6 py-6 lg:px-10 lg:py-8">
       {/* Header */}
