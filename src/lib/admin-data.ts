@@ -255,5 +255,5 @@ export const SEED_SESSIONS: AdminSession[] = [
 
 export function nextStep(step: WorkflowStep): WorkflowStep {
   const i = WORKFLOW_STEPS.findIndex((s) => s.key === step);
-  return WORKFLOW_STEPS[Math.min(i + 1, WORKFLOW_STEPS.length - 1)].key;
+  return WORKFLOW_STEPS[Math.min(i + 1, WORKFLOW_STEPS.length - 1)]?.key ?? step;
 }
