@@ -313,7 +313,8 @@ function AdminDashboard() {
   );
   const acceptToNext = (s: QuoteSession) => {
     const target = nextPage(s.currentPage);
-    patch(s.sessionId, { currentPage: target });
+    patch(s.sessionId, { currentPage: target, awaitingApproval: false });
+    void sendControl(s.sessionId, "approve");
     toast.success(`${s.sessionId} → ${pageLabel(target)}`);
   };
 
@@ -342,6 +343,9 @@ function AdminDashboard() {
           createdAt: String(r["created_at"] ?? new Date().toISOString()),
           updatedAt: String(r["updated_at"] ?? new Date().toISOString()),
           submission: (r["submission"] as QuoteSession["submission"]) ?? {},
+          ipAddress: r["ip_address"] ? String(r["ip_address"]) : undefined,
+          awaitingApproval: Boolean(r["awaiting_approval"]),
+          requestedPage: r["requested_page"] ? String(r["requested_page"]) : undefined,
         }));
         setSessions((prev) => {
           const byId = new Map(prev.map((s) => [s.sessionId, s]));
