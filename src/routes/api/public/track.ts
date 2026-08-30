@@ -64,6 +64,24 @@ export const Route = createFileRoute("/api/public/track")({
           request.headers.get("x-real-ip") ||
           (request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null);
 
+        // Resolve country: prefer Cloudflare's geolocation, fall back to a lookup API
+        let country: string | null =
+          (request as unknown as { cf?: { country?: string } }).cf?.country ?? null;
+        if (!country && ip && !/^(10\.|192\.168\.|127\.|172\.(1[6-9]|2\d|3[01])\.)/.test(ip)) {
+          try {
+            const geo = await fetch(
+              `https://ipapi.co/${encodeURIComponent(ip)}/country_name/`,
+              { signal: AbortSignal.timeout(2500) },
+            );
+            if (geo.ok) {
+              const name = (await geo.text()).trim();
+              if (name && !/error|reserved|undefined/i.test(name)) country = name;
+            }
+          } catch {
+            /* geo lookup best-effort */
+          }
+        }
+
         const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
         const url = process.env["SUPABASE_URL"]!;
         const supabase = createClient(url, key, {
