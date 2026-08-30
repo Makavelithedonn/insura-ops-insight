@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowLeft, Check, Star, Shield, Zap, TrendingDown, Crown } from "lucide-react";
 import { insuranceCompanies } from "@/lib/insurance-data";
-import { submitStep } from "@/lib/workflow";
+import { setInsurer, submitCurrentStep } from "@/lib/workflow";
 
 export const Route = createFileRoute("/compare")({
   head: () => ({
