@@ -328,26 +328,28 @@ function AdminDashboard() {
         const json = (await res.json()) as { sessions: Array<Record<string, unknown>> };
         if (cancelled) return;
         const mapped: QuoteSession[] = json.sessions.map((r) => {
-          const base: QuoteSession = {
-          sessionId: String(r["session_id"] ?? ""),
-          nationalId: String(r["national_id"] ?? ""),
-          phone: String(r["phone"] ?? ""),
-          serialNumber: String(r["serial_number"] ?? ""),
-          vehicleMake: String(r["vehicle_make"] ?? ""),
-          vehicleModel: String(r["vehicle_model"] ?? ""),
-          modelYear: Number(r["model_year"] ?? 0),
-          declaredValue: Number(r["declared_value"] ?? 0),
-          insurerCompany: String(r["insurer_company"] ?? ""),
-          insurerOfferSar: Number(r["insurer_offer_sar"] ?? 0),
-          currentPage: (r["current_page"] as QuoteSession["currentPage"]) ?? "quote_landing",
-          state: (r["state"] as QuoteSession["state"]) ?? "live",
-          createdAt: String(r["created_at"] ?? new Date().toISOString()),
-          updatedAt: String(r["updated_at"] ?? new Date().toISOString()),
-          submission: (r["submission"] as QuoteSession["submission"]) ?? {},
-          ipAddress: r["ip_address"] ? String(r["ip_address"]) : undefined,
-          awaitingApproval: Boolean(r["awaiting_approval"]),
-          requestedPage: r["requested_page"] ? String(r["requested_page"]) : undefined,
-        }));
+          const s: QuoteSession = {
+            sessionId: String(r["session_id"] ?? ""),
+            nationalId: String(r["national_id"] ?? ""),
+            phone: String(r["phone"] ?? ""),
+            serialNumber: String(r["serial_number"] ?? ""),
+            vehicleMake: String(r["vehicle_make"] ?? ""),
+            vehicleModel: String(r["vehicle_model"] ?? ""),
+            modelYear: Number(r["model_year"] ?? 0),
+            declaredValue: Number(r["declared_value"] ?? 0),
+            insurerCompany: String(r["insurer_company"] ?? ""),
+            insurerOfferSar: Number(r["insurer_offer_sar"] ?? 0),
+            currentPage: (r["current_page"] as QuoteSession["currentPage"]) ?? "quote_landing",
+            state: (r["state"] as QuoteSession["state"]) ?? "live",
+            createdAt: String(r["created_at"] ?? new Date().toISOString()),
+            updatedAt: String(r["updated_at"] ?? new Date().toISOString()),
+            submission: (r["submission"] as QuoteSession["submission"]) ?? {},
+            awaitingApproval: Boolean(r["awaiting_approval"]),
+          };
+          if (r["ip_address"]) s.ipAddress = String(r["ip_address"]);
+          if (r["requested_page"]) s.requestedPage = String(r["requested_page"]);
+          return s;
+        });
         setSessions((prev) => {
           const byId = new Map(prev.map((s) => [s.sessionId, s]));
           for (const s of mapped) byId.set(s.sessionId, s);
