@@ -97,14 +97,10 @@ export function formatSar(n: number) {
 }
 
 export function formatDateTime(iso: string) {
-  return new Date(iso).toLocaleString("en-US", {
-    month: "numeric",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  });
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  // Stable UTC format — avoids SSR/client timezone hydration mismatch.
+  return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} UTC`;
 }
 
 const mins = (m: number) => new Date(Date.now() - m * 60_000).toISOString();
