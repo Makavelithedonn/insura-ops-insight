@@ -673,18 +673,28 @@ function AdminDashboard() {
                         </div>
                       </td>
                       <td className="px-4 py-4 tabular-nums">{formatSar(s.insurerOfferSar)}</td>
-                      <td className="px-4 py-4">
-                        {s.state === "blocked" ? (
-                          <span className="inline-flex items-center rounded-full border border-destructive/30 bg-destructive/10 px-2.5 py-0.5 text-xs font-medium text-destructive">
-                            Blocked
-                          </span>
-                        ) : (
-                          <StageBadge page={s.currentPage} />
-                        )}
-                      </td>
-                      <td className="px-4 py-4 text-muted-foreground">
-                        {formatDateTime(s.updatedAt)}
-                      </td>
+                       <td className="px-4 py-4">
+                         {s.state === "blocked" ? (
+                           <span className="inline-flex items-center rounded-full border border-destructive/30 bg-destructive/10 px-2.5 py-0.5 text-xs font-medium text-destructive">
+                             Blocked
+                           </span>
+                         ) : (
+                           <div className="flex flex-col gap-1">
+                             <StageBadge page={s.currentPage} />
+                             {s.awaitingApproval && (
+                               <span className="inline-flex w-fit items-center rounded-full border border-warning/30 bg-warning/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-warning">
+                                 Awaiting {s.requestedPage ?? ""}
+                               </span>
+                             )}
+                           </div>
+                         )}
+                       </td>
+                       <td className="px-4 py-4 text-muted-foreground">
+                         <div>{formatDateTime(s.updatedAt)}</div>
+                         {s.ipAddress && (
+                           <div className="font-mono text-xs">{s.ipAddress}</div>
+                         )}
+                       </td>
                       <td className="px-4 py-4">
                         <div className="flex items-center justify-end gap-1">
                           <button
