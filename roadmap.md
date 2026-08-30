@@ -1,4 +1,5 @@
 # Roadmap
 
-- [x] Admin operations dashboard: sidebar, top bar, overview cards, live sessions table, session modal, workflow badges, accept/reject actions
-- [ ] Left sidebar: page tabs with active-user counts per page, plus an active-users card with accept/reject
+- [x] Admin operations dashboard v1: sidebar, top bar, overview cards, live sessions, session modal, accept/reject
+- [x] Sidebar page tabs with active-user counts + active-users card with accept/reject
+- [ ] Rebuild dashboard to match the Tameeni-style reference template (dark theme, Pages · live traffic sidebar, submissions modal with per-step accept/reject, Redirect customer, Block session), keeping only fields actually collected by tmin-becaer.bolt.host (SAR currency, KSA insurers, Motsl/Nafath/STC OTP steps)
