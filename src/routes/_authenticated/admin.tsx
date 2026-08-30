@@ -177,6 +177,7 @@ function AdminDashboard() {
   const [pageFilter, setPageFilter] = useState<PageKey | "all">("all");
   const [openId, setOpenId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const navigate = useNavigate();
 
   // Only show sessions active in the last 12 hours.
   const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
