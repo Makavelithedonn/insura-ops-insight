@@ -509,10 +509,11 @@ function AdminDashboard() {
             variant="outline"
             size="sm"
             onClick={enableNotifications}
-            className={notifOn ? "border-success/40 text-success hover:bg-success/10" : ""}
+            title="Alerts are always on — click to replay a test chime"
+            className="border-success/40 text-success hover:bg-success/10"
           >
-            {notifOn ? <Bell className="size-4" /> : <BellOff className="size-4" />}
-            {notifOn ? "Alerts on" : "Enable alerts"}
+            <Bell className="size-4" />
+            Alerts on
           </Button>
           <Button variant="outline" size="sm" onClick={refresh} disabled={refreshing}>
             <RefreshCw className={refreshing ? "size-4 animate-spin" : "size-4"} />
