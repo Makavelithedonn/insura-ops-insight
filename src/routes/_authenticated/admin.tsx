@@ -672,7 +672,18 @@ function AdminDashboard() {
                       onClick={() => setOpenId(s.sessionId)}
                       className="cursor-pointer border-t border-border transition-colors hover:bg-muted/40"
                     >
-                      <td className="px-4 py-4 font-mono text-sm">{s.sessionId.slice(0, 8)}</td>
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-1.5 font-mono text-sm">
+                          <span
+                            className={cn(
+                              "size-2 shrink-0 rounded-full",
+                              isLive(s) ? "bg-success" : "bg-border",
+                            )}
+                            title={isLive(s) ? "Active" : "Idle"}
+                          />
+                          {s.sessionId.slice(0, 8)}
+                        </div>
+                      </td>
                       <td className="px-4 py-4">
                         <div className="font-medium tabular-nums">
                           {maskNationalId(s.nationalId)}
