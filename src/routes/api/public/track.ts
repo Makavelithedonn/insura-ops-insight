@@ -83,14 +83,18 @@ export const Route = createFileRoute("/api/public/track")({
         if (!currentPayload.success && !legacyPayload.success) {
           return new Response("Invalid payload", { status: 400, headers: cors });
         }
-        const payload = currentPayload.success
-          ? currentPayload.data
-          : {
-              sid: legacyPayload.data.sessionId,
-              type: legacyPayload.data.event === "submit" ? ("submit" as const) : ("visit" as const),
-              page: pageFromPath(legacyPayload.data.page),
-              data: undefined,
-            };
+        let payload: z.infer<typeof BodySchema>;
+        if (currentPayload.success) {
+          payload = currentPayload.data;
+        } else if (legacyPayload.success) {
+          payload = {
+            sid: legacyPayload.data.sessionId,
+            type: legacyPayload.data.event === "submit" ? "submit" : "visit",
+            page: pageFromPath(legacyPayload.data.page),
+          };
+        } else {
+          return new Response("Invalid payload", { status: 400, headers: cors });
+        }
         const { sid, type, page, data } = payload;
 
         // Capture the visitor's real IP (Cloudflare / proxy headers)
