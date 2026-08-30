@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ActivateRouteImport } from './routes/activate'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as ConfirmRouteImport } from './routes/confirm'
 import { Route as OtpRouteImport } from './routes/otp'
@@ -37,6 +38,11 @@ const IndexRoute = IndexRouteImport.update({
 const ActivateRoute = ActivateRouteImport.update({
   id: '/activate',
   path: '/activate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompareRoute = CompareRouteImport.update({
@@ -128,6 +134,7 @@ const ApiPublicTrackRoute = ApiPublicTrackRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/activate': typeof ActivateRoute
+  '/auth': typeof AuthRoute
   '/compare': typeof CompareRoute
   '/confirm': typeof ConfirmRoute
   '/otp': typeof OtpRoute
@@ -149,6 +156,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/activate': typeof ActivateRoute
+  '/auth': typeof AuthRoute
   '/compare': typeof CompareRoute
   '/confirm': typeof ConfirmRoute
   '/otp': typeof OtpRoute
@@ -171,6 +179,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/activate': typeof ActivateRoute
+  '/auth': typeof AuthRoute
   '/compare': typeof CompareRoute
   '/confirm': typeof ConfirmRoute
   '/otp': typeof OtpRoute
@@ -194,6 +203,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/activate'
+    | '/auth'
     | '/compare'
     | '/confirm'
     | '/otp'
@@ -215,6 +225,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/activate'
+    | '/auth'
     | '/compare'
     | '/confirm'
     | '/otp'
@@ -236,6 +247,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/activate'
+    | '/auth'
     | '/compare'
     | '/confirm'
     | '/otp'
@@ -258,6 +270,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ActivateRoute: typeof ActivateRoute
+  AuthRoute: typeof AuthRoute
   CompareRoute: typeof CompareRoute
   ConfirmRoute: typeof ConfirmRoute
   OtpRoute: typeof OtpRoute
@@ -291,6 +304,13 @@ declare module '@tanstack/react-router' {
       path: '/activate'
       fullPath: '/activate'
       preLoaderRoute: typeof ActivateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/compare': {
@@ -418,6 +438,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ActivateRoute: ActivateRoute,
+  AuthRoute: AuthRoute,
   CompareRoute: CompareRoute,
   ConfirmRoute: ConfirmRoute,
   OtpRoute: OtpRoute,
