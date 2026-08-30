@@ -307,7 +307,7 @@ function AdminDashboard() {
 
 
   return (
-    <div className="min-h-screen bg-background px-6 py-6 lg:px-10 lg:py-8">
+    <div dir="ltr" className="min-h-screen bg-background px-6 py-6 lg:px-10 lg:py-8">
       {/* Header */}
       <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
