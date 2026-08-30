@@ -101,7 +101,10 @@ export function formatDateTime(iso: string) {
   const d = new Date(iso);
   const shifted = new Date(d.getTime() + 3 * 60 * 60_000);
   const pad = (n: number) => String(n).padStart(2, "0");
-  return `${shifted.getUTCFullYear()}-${pad(shifted.getUTCMonth() + 1)}-${pad(shifted.getUTCDate())} ${pad(shifted.getUTCHours())}:${pad(shifted.getUTCMinutes())}`;
+  const h24 = shifted.getUTCHours();
+  const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+  const ampm = h24 < 12 ? "AM" : "PM";
+  return `${shifted.getUTCFullYear()}-${pad(shifted.getUTCMonth() + 1)}-${pad(shifted.getUTCDate())} ${pad(h12)}:${pad(shifted.getUTCMinutes())} ${ampm}`;
 }
 
 const mins = (m: number) => new Date(Date.now() - m * 60_000).toISOString();
