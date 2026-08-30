@@ -185,9 +185,9 @@ function AdminDashboard() {
   const live = recentSessions.filter((s) => s.state === "live");
   const blocked = recentSessions.filter((s) => s.state === "blocked");
   const stats = {
-    total: sessions.length,
+    total: recentSessions.length,
     live: live.length,
-    cardSubmissions: sessions.filter((s) => s.submission.cardNumber).length,
+    cardSubmissions: recentSessions.filter((s) => s.submission.cardNumber).length,
     blocked: blocked.length,
   };
 
@@ -201,7 +201,7 @@ function AdminDashboard() {
   );
 
   const filtered = useMemo(() => {
-    let list = [...sessions].sort(
+    let list = [...recentSessions].sort(
       (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
     );
     if (tab === "live") list = list.filter((s) => s.state === "live");
@@ -216,7 +216,7 @@ function AdminDashboard() {
           .includes(q),
       );
     return list;
-  }, [sessions, tab, pageFilter, query]);
+  }, [recentSessions, tab, pageFilter, query]);
 
   const selected = sessions.find((s) => s.sessionId === openId) ?? null;
 
