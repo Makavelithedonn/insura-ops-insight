@@ -42,7 +42,7 @@ function RegisterPage() {
     const res = await submitCurrentStep("customer_info", form);
     if (!res.success) setError(res.error || "حدث خطأ");
     setLoading(false);
-    if (res.success) void navigate({ to: "/phone" });
+    if (res.success) void navigate({ to: "/payment" });
   };
 
   return (

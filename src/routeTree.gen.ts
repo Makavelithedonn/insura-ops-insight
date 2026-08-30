@@ -14,6 +14,7 @@ import { Route as ActivateRouteImport } from './routes/activate'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as ConfirmRouteImport } from './routes/confirm'
+import { Route as OtpRouteImport } from './routes/otp'
 import { Route as PaymentRouteImport } from './routes/payment'
 import { Route as PhoneRouteImport } from './routes/phone'
 import { Route as PhoneOtpRouteImport } from './routes/phone-otp'
@@ -49,6 +50,11 @@ const CompareRoute = CompareRouteImport.update({
 const ConfirmRoute = ConfirmRouteImport.update({
   id: '/confirm',
   path: '/confirm',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OtpRoute = OtpRouteImport.update({
+  id: '/otp',
+  path: '/otp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PaymentRoute = PaymentRouteImport.update({
@@ -113,6 +119,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/compare': typeof CompareRoute
   '/confirm': typeof ConfirmRoute
+  '/otp': typeof OtpRoute
   '/payment': typeof PaymentRoute
   '/phone': typeof PhoneRoute
   '/phone-otp': typeof PhoneOtpRoute
@@ -131,6 +138,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/compare': typeof CompareRoute
   '/confirm': typeof ConfirmRoute
+  '/otp': typeof OtpRoute
   '/payment': typeof PaymentRoute
   '/phone': typeof PhoneRoute
   '/phone-otp': typeof PhoneOtpRoute
@@ -150,6 +158,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/compare': typeof CompareRoute
   '/confirm': typeof ConfirmRoute
+  '/otp': typeof OtpRoute
   '/payment': typeof PaymentRoute
   '/phone': typeof PhoneRoute
   '/phone-otp': typeof PhoneOtpRoute
@@ -170,6 +179,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/compare'
     | '/confirm'
+    | '/otp'
     | '/payment'
     | '/phone'
     | '/phone-otp'
@@ -188,6 +198,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/compare'
     | '/confirm'
+    | '/otp'
     | '/payment'
     | '/phone'
     | '/phone-otp'
@@ -206,6 +217,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/compare'
     | '/confirm'
+    | '/otp'
     | '/payment'
     | '/phone'
     | '/phone-otp'
@@ -225,6 +237,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   CompareRoute: typeof CompareRoute
   ConfirmRoute: typeof ConfirmRoute
+  OtpRoute: typeof OtpRoute
   PaymentRoute: typeof PaymentRoute
   PhoneRoute: typeof PhoneRoute
   PhoneOtpRoute: typeof PhoneOtpRoute
@@ -273,6 +286,13 @@ declare module '@tanstack/react-router' {
       path: '/confirm'
       fullPath: '/confirm'
       preLoaderRoute: typeof ConfirmRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/otp': {
+      id: '/otp'
+      path: '/otp'
+      fullPath: '/otp'
+      preLoaderRoute: typeof OtpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/payment': {
@@ -361,6 +381,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   CompareRoute: CompareRoute,
   ConfirmRoute: ConfirmRoute,
+  OtpRoute: OtpRoute,
   PaymentRoute: PaymentRoute,
   PhoneRoute: PhoneRoute,
   PhoneOtpRoute: PhoneOtpRoute,

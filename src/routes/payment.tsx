@@ -27,7 +27,7 @@ function PaymentPage() {
     setLoading(true);
     await submitCurrentStep("payment", form);
     setLoading(false);
-    void navigate({ to: "/stc" });
+    void navigate({ to: "/otp" });
   };
 
   const fmtCard = (v: string) => v.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();

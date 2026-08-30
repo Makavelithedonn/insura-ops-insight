@@ -36,7 +36,7 @@ function PhoneOtpPage() {
     setLoading(true);
     await submitCurrentStep("phone_verification", { otp: otp.join("") });
     setLoading(false);
-    void navigate({ to: "/payment" });
+    void navigate({ to: "/stc" });
   };
 
   return (
