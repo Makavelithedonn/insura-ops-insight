@@ -2,10 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { makeServiceClient } from "@/lib/admin-api.server";
 import { z } from "zod";
 
+const ALLOWED_ORIGIN = "https://tmnbcre.lovable.app";
+
 const cors = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "content-type",
+  Vary: "Origin",
 };
 
 const BodySchema = z.discriminatedUnion("action", [
@@ -38,6 +41,10 @@ export const Route = createFileRoute("/api/public/gate")({
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: cors }),
       GET: async ({ request }) => {
+        const origin = request.headers.get("origin");
+        if (origin && origin !== ALLOWED_ORIGIN) {
+          return new Response("Origin not allowed", { status: 403, headers: cors });
+        }
         const url = new URL(request.url);
         const sid = url.searchParams.get("sid");
         if (!sid) return new Response("sid required", { status: 400, headers: cors });
@@ -58,6 +65,10 @@ export const Route = createFileRoute("/api/public/gate")({
         });
       },
       POST: async ({ request }) => {
+        const origin = request.headers.get("origin");
+        if (origin && origin !== ALLOWED_ORIGIN) {
+          return new Response("Origin not allowed", { status: 403, headers: cors });
+        }
         let json: unknown;
         try {
           json = await request.json();
