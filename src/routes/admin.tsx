@@ -481,7 +481,7 @@ function AdminDashboard() {
           </div>
 
           {/* Connect your site */}
-          <div className="mt-6 rounded-xl border border-dashed border-border p-3">
+          <div id="connect-panel" className="mt-6 rounded-xl border border-dashed border-border p-3">
             <div className="mb-1 flex items-center gap-1.5 text-xs font-semibold">
               <Plug className="size-3.5" /> Connect your bolt site
             </div>
