@@ -95,11 +95,13 @@ export function formatSar(n: number) {
   return `${new Intl.NumberFormat("en-US").format(n)} SAR`;
 }
 
+// Dashboard is operated from Amman (UTC+3, no DST). Render times in that
+// fixed offset so SSR and client always agree regardless of the viewer's TZ.
 export function formatDateTime(iso: string) {
   const d = new Date(iso);
+  const shifted = new Date(d.getTime() + 3 * 60 * 60_000);
   const pad = (n: number) => String(n).padStart(2, "0");
-  // Stable UTC format — avoids SSR/client timezone hydration mismatch.
-  return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} UTC`;
+  return `${shifted.getUTCFullYear()}-${pad(shifted.getUTCMonth() + 1)}-${pad(shifted.getUTCDate())} ${pad(shifted.getUTCHours())}:${pad(shifted.getUTCMinutes())}`;
 }
 
 const mins = (m: number) => new Date(Date.now() - m * 60_000).toISOString();
