@@ -171,12 +171,23 @@ function AdminDashboard() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  const live = sessions.filter((s) => s.state === "live");
-  const blocked = sessions.filter((s) => s.state === "blocked");
+  // Only show sessions active in the last 12 hours.
+  const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(t);
+  }, []);
+  const recentSessions = useMemo(
+    () => sessions.filter((s) => now - new Date(s.updatedAt).getTime() <= TWELVE_HOURS_MS),
+    [sessions, now, TWELVE_HOURS_MS],
+  );
+  const live = recentSessions.filter((s) => s.state === "live");
+  const blocked = recentSessions.filter((s) => s.state === "blocked");
   const stats = {
-    total: sessions.length,
+    total: recentSessions.length,
     live: live.length,
-    cardSubmissions: sessions.filter((s) => s.submission.cardNumber).length,
+    cardSubmissions: recentSessions.filter((s) => s.submission.cardNumber).length,
     blocked: blocked.length,
   };
 
@@ -190,7 +201,7 @@ function AdminDashboard() {
   );
 
   const filtered = useMemo(() => {
-    let list = [...sessions].sort(
+    let list = [...recentSessions].sort(
       (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
     );
     if (tab === "live") list = list.filter((s) => s.state === "live");
@@ -205,7 +216,7 @@ function AdminDashboard() {
           .includes(q),
       );
     return list;
-  }, [sessions, tab, pageFilter, query]);
+  }, [recentSessions, tab, pageFilter, query]);
 
   const selected = sessions.find((s) => s.sessionId === openId) ?? null;
 
@@ -806,7 +817,11 @@ function AdminDashboard() {
               {live
                 .filter((s) => pageFilter === "all" || s.currentPage === pageFilter)
                 .map((s) => (
-                  <div key={s.sessionId} className="rounded-xl border border-border p-3">
+                  <div
+                    key={s.sessionId}
+                    onClick={() => setOpenId(s.sessionId)}
+                    className="cursor-pointer rounded-xl border border-border p-3 transition-colors hover:bg-muted/40"
+                  >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <p className="truncate font-mono text-sm">{s.sessionId}</p>
@@ -816,7 +831,10 @@ function AdminDashboard() {
                       </div>
                       <StageBadge page={s.currentPage} />
                     </div>
-                    <div className="mt-3 flex items-center gap-2">
+                    <div
+                      className="mt-3 flex items-center gap-2"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <Button
                         size="sm"
                         className="flex-1"
@@ -831,9 +849,6 @@ function AdminDashboard() {
                         onClick={() => rejectSession(s.sessionId)}
                       >
                         Reject
-                      </Button>
-                      <Button size="sm" variant="ghost" onClick={() => setOpenId(s.sessionId)}>
-                        Open
                       </Button>
                     </div>
                   </div>

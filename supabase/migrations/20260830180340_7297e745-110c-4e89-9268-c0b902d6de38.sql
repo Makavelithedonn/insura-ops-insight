@@ -1,0 +1,1 @@
+DELETE FROM public.tracked_sessions WHERE session_id = 'testabcd';
