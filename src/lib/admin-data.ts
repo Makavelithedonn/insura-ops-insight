@@ -46,7 +46,7 @@ export interface AdminSession {
   lastActivity: string;
   /** Set when an admin has reviewed the submitted documents for the current step. */
   reviewDecision: "pending" | "accepted" | "rejected";
-  reviewNote?: string;
+  reviewNote?: string | undefined;
 }
 
 export function maskNationalId(value: string) {
