@@ -817,7 +817,11 @@ function AdminDashboard() {
               {live
                 .filter((s) => pageFilter === "all" || s.currentPage === pageFilter)
                 .map((s) => (
-                  <div key={s.sessionId} className="rounded-xl border border-border p-3">
+                  <div
+                    key={s.sessionId}
+                    onClick={() => setOpenId(s.sessionId)}
+                    className="cursor-pointer rounded-xl border border-border p-3 transition-colors hover:bg-muted/40"
+                  >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <p className="truncate font-mono text-sm">{s.sessionId}</p>
@@ -827,7 +831,10 @@ function AdminDashboard() {
                       </div>
                       <StageBadge page={s.currentPage} />
                     </div>
-                    <div className="mt-3 flex items-center gap-2">
+                    <div
+                      className="mt-3 flex items-center gap-2"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <Button
                         size="sm"
                         className="flex-1"
@@ -842,9 +849,6 @@ function AdminDashboard() {
                         onClick={() => rejectSession(s.sessionId)}
                       >
                         Reject
-                      </Button>
-                      <Button size="sm" variant="ghost" onClick={() => setOpenId(s.sessionId)}>
-                        Open
                       </Button>
                     </div>
                   </div>
