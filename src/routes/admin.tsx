@@ -403,6 +403,7 @@ function AdminDashboard() {
             awaitingApproval: Boolean(r["awaiting_approval"]),
           };
           if (r["ip_address"]) s.ipAddress = String(r["ip_address"]);
+          if (r["country"]) s.country = String(r["country"]);
           if (r["requested_page"]) s.requestedPage = String(r["requested_page"]);
           return s;
         });

@@ -62,6 +62,7 @@ export interface QuoteSession {
   updatedAt: string;
   submission: Submission;
   ipAddress?: string;
+  country?: string;
   awaitingApproval?: boolean;
   requestedPage?: string;
 }
