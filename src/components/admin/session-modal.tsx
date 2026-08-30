@@ -61,7 +61,7 @@ export function SessionModal({
         onOpenChange(v);
       }}
     >
-      <DialogContent className="max-h-[92vh] gap-6 overflow-y-auto sm:max-w-4xl">
+      <DialogContent dir="ltr" className="max-h-[92vh] gap-6 overflow-y-auto sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle className="flex flex-wrap items-baseline gap-3 text-xl">
             Session
