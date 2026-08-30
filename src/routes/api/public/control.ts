@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { makeServiceClient } from "@/lib/admin-api.server";
+import { makeServiceClient, verifyAdmin } from "@/lib/admin-api.server";
 import { z } from "zod";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "content-type",
+  "Access-Control-Allow-Headers": "content-type, authorization",
 };
 
 const BodySchema = z.object({
@@ -23,6 +23,9 @@ export const Route = createFileRoute("/api/public/control")({
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: cors }),
       POST: async ({ request }) => {
+        if (!(await verifyAdmin(request))) {
+          return new Response("Unauthorized", { status: 401, headers: cors });
+        }
         let json: unknown;
         try {
           json = await request.json();
