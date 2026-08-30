@@ -79,22 +79,17 @@ export const KSA_INSURERS = [
 ];
 
 export function maskNationalId(v: string) {
-  if (v.length <= 4) return "••••";
-  return `${v.slice(0, 2)}${"•".repeat(v.length - 4)}${v.slice(-2)}`;
+  return v ?? "";
 }
 
 export function maskPhone(v: string) {
-  const d = v.replace(/\s/g, "");
-  if (d.length <= 4) return "••••";
-  return `${d.slice(0, 4)}${"•".repeat(Math.max(d.length - 6, 2))}${d.slice(-2)}`;
+  return v ?? "";
 }
 
 export function maskCard(v?: string) {
-  if (!v) return null;
-  const d = v.replace(/\s/g, "");
-  if (d.length < 4) return "••••";
-  return `•••• •••• •••• ${d.slice(-4)}`;
+  return v ?? null;
 }
+
 
 export function formatSar(n: number) {
   return `${new Intl.NumberFormat("en-US").format(n)} SAR`;
