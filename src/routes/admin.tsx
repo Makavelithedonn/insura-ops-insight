@@ -41,6 +41,8 @@ import {
   maskPhone,
   nextStep,
   relativeTime,
+  stepLabel,
+  WORKFLOW_STEPS,
 } from "@/lib/admin-data";
 
 export const Route = createFileRoute("/admin")({
@@ -103,6 +105,7 @@ function AdminDashboard() {
   const [query, setQuery] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [activePage, setActivePage] = useState<string | null>(null);
 
   const stats = useMemo(
     () => ({
@@ -125,6 +128,7 @@ function AdminDashboard() {
     if (view === "quotes")
       list = list.filter((s) => s.quoteStatus !== "completed" && s.status !== "closed");
     if (view === "offers") list = list.filter((s) => s.currentStep !== "quote_landing");
+    if (activePage) list = list.filter((s) => s.currentStep === activePage);
     if (q)
       list = list.filter((s) =>
         [
@@ -141,7 +145,22 @@ function AdminDashboard() {
           .includes(q),
       );
     return list;
-  }, [sessions, query, view]);
+  }, [sessions, query, view, activePage]);
+
+  const liveUsers = useMemo(
+    () => sessions.filter((s) => s.status === "active" || s.status === "pending_review"),
+    [sessions],
+  );
+
+  const pageCounts = useMemo(
+    () =>
+      WORKFLOW_STEPS.map((step) => ({
+        key: step.key,
+        label: step.label,
+        count: liveUsers.filter((s) => s.currentStep === step.key).length,
+      })),
+    [liveUsers],
+  );
 
   const selected = sessions.find((s) => s.sessionId === openId) ?? null;
 
@@ -213,6 +232,9 @@ function AdminDashboard() {
           offers: new Set(sessions.map((s) => s.insuranceOffer)).size,
           sessions: stats.activeSessions,
         }}
+        pages={pageCounts}
+        activePage={activePage}
+        onSelectPage={setActivePage}
       />
 
       <div className="flex min-w-0 flex-1 flex-col">
@@ -282,6 +304,65 @@ function AdminDashboard() {
             <StatCard label="Completed quotes" value={stats.completed} icon={CheckCircle2} />
             <StatCard label="Pending quotes" value={stats.pending} icon={Clock} />
           </div>
+
+          <section className="card-surface p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h2 className="text-sm font-semibold">Active users on site</h2>
+                <p className="text-xs text-muted-foreground">
+                  {liveUsers.length} user{liveUsers.length === 1 ? "" : "s"} currently in the quote
+                  flow
+                  {activePage ? ` · filtered by ${stepLabel(activePage as WorkflowStep)}` : ""}
+                </p>
+              </div>
+              {activePage && (
+                <Button size="sm" variant="ghost" onClick={() => setActivePage(null)}>
+                  Clear page filter
+                </Button>
+              )}
+            </div>
+
+            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {liveUsers
+                .filter((s) => !activePage || s.currentStep === activePage)
+                .map((s) => (
+                  <div key={s.sessionId} className="rounded-xl border border-border p-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">{s.customerName}</p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {s.sessionId} · {maskPhone(s.phone)} · {relativeTime(s.lastActivity)}
+                        </p>
+                      </div>
+                      <StepBadge step={s.currentStep} />
+                    </div>
+                    <div className="mt-3 flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => handleDecision(s.sessionId, "accepted")}
+                      >
+                        <Check className="size-4" /> Accept
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                        onClick={() => handleDecision(s.sessionId, "rejected")}
+                      >
+                        <X className="size-4" /> Reject
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => setOpenId(s.sessionId)}>
+                        Open
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              {liveUsers.filter((s) => !activePage || s.currentStep === activePage).length === 0 && (
+                <p className="text-sm text-muted-foreground">No active users on this page.</p>
+              )}
+            </div>
+          </section>
 
           <section className="card-surface overflow-hidden">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3">
