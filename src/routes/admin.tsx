@@ -243,12 +243,14 @@ function AdminDashboard() {
       toast.error("Browser notifications not supported");
       return;
     }
+    getAudioCtx();
     const perm =
       Notification.permission === "default"
         ? await Notification.requestPermission()
         : Notification.permission;
     if (perm === "granted") {
       setNotifOn(true);
+      playSound("visit");
       toast.success("Notifications enabled");
     } else {
       toast.error("Notification permission denied");
@@ -271,7 +273,7 @@ function AdminDashboard() {
           toast.success(`Submission · ${s.sessionId}`, {
             description: pageLabel(s.currentPage),
           });
-          notify("New submission", `${s.sessionId} · ${pageLabel(s.currentPage)}`);
+          notify("New submission", `${s.sessionId} · ${pageLabel(s.currentPage)}`, "submit");
         } else if (before.currentPage !== s.currentPage) {
           toast(`${s.sessionId} moved to ${pageLabel(s.currentPage)}`);
         }
