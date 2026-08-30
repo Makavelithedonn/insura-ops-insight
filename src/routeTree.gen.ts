@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ActivateRouteImport } from './routes/activate'
-import { Route as AdminRouteImport } from './routes/admin'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as ConfirmRouteImport } from './routes/confirm'
 import { Route as OtpRouteImport } from './routes/otp'
@@ -23,6 +22,7 @@ import { Route as StcRouteImport } from './routes/stc'
 import { Route as StcOtpRouteImport } from './routes/stc-otp'
 import { Route as SuccessRouteImport } from './routes/success'
 import { Route as VerifyRouteImport } from './routes/verify'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as InsuranceTypeRouteImport } from './routes/insurance.$type'
 import { Route as ApiPublicControlRouteImport } from './routes/api/public/control'
 import { Route as ApiPublicGateRouteImport } from './routes/api/public/gate'
@@ -37,11 +37,6 @@ const IndexRoute = IndexRouteImport.update({
 const ActivateRoute = ActivateRouteImport.update({
   id: '/activate',
   path: '/activate',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompareRoute = CompareRouteImport.update({
@@ -99,6 +94,11 @@ const VerifyRoute = VerifyRouteImport.update({
   path: '/verify',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/_authenticated/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InsuranceTypeRoute = InsuranceTypeRouteImport.update({
   id: '/insurance/$type',
   path: '/insurance/$type',
@@ -128,7 +128,6 @@ const ApiPublicTrackRoute = ApiPublicTrackRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/activate': typeof ActivateRoute
-  '/admin': typeof AdminRoute
   '/compare': typeof CompareRoute
   '/confirm': typeof ConfirmRoute
   '/otp': typeof OtpRoute
@@ -140,6 +139,7 @@ export interface FileRoutesByFullPath {
   '/stc-otp': typeof StcOtpRoute
   '/success': typeof SuccessRoute
   '/verify': typeof VerifyRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/insurance/$type': typeof InsuranceTypeRoute
   '/api/public/control': typeof ApiPublicControlRoute
   '/api/public/gate': typeof ApiPublicGateRoute
@@ -149,7 +149,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/activate': typeof ActivateRoute
-  '/admin': typeof AdminRoute
   '/compare': typeof CompareRoute
   '/confirm': typeof ConfirmRoute
   '/otp': typeof OtpRoute
@@ -161,6 +160,7 @@ export interface FileRoutesByTo {
   '/stc-otp': typeof StcOtpRoute
   '/success': typeof SuccessRoute
   '/verify': typeof VerifyRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/insurance/$type': typeof InsuranceTypeRoute
   '/api/public/control': typeof ApiPublicControlRoute
   '/api/public/gate': typeof ApiPublicGateRoute
@@ -171,7 +171,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/activate': typeof ActivateRoute
-  '/admin': typeof AdminRoute
   '/compare': typeof CompareRoute
   '/confirm': typeof ConfirmRoute
   '/otp': typeof OtpRoute
@@ -183,6 +182,7 @@ export interface FileRoutesById {
   '/stc-otp': typeof StcOtpRoute
   '/success': typeof SuccessRoute
   '/verify': typeof VerifyRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/insurance/$type': typeof InsuranceTypeRoute
   '/api/public/control': typeof ApiPublicControlRoute
   '/api/public/gate': typeof ApiPublicGateRoute
@@ -194,7 +194,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/activate'
-    | '/admin'
     | '/compare'
     | '/confirm'
     | '/otp'
@@ -206,6 +205,7 @@ export interface FileRouteTypes {
     | '/stc-otp'
     | '/success'
     | '/verify'
+    | '/admin'
     | '/insurance/$type'
     | '/api/public/control'
     | '/api/public/gate'
@@ -215,7 +215,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/activate'
-    | '/admin'
     | '/compare'
     | '/confirm'
     | '/otp'
@@ -227,6 +226,7 @@ export interface FileRouteTypes {
     | '/stc-otp'
     | '/success'
     | '/verify'
+    | '/admin'
     | '/insurance/$type'
     | '/api/public/control'
     | '/api/public/gate'
@@ -236,7 +236,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/activate'
-    | '/admin'
     | '/compare'
     | '/confirm'
     | '/otp'
@@ -248,6 +247,7 @@ export interface FileRouteTypes {
     | '/stc-otp'
     | '/success'
     | '/verify'
+    | '/_authenticated/admin'
     | '/insurance/$type'
     | '/api/public/control'
     | '/api/public/gate'
@@ -258,7 +258,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ActivateRoute: typeof ActivateRoute
-  AdminRoute: typeof AdminRoute
   CompareRoute: typeof CompareRoute
   ConfirmRoute: typeof ConfirmRoute
   OtpRoute: typeof OtpRoute
@@ -270,6 +269,7 @@ export interface RootRouteChildren {
   StcOtpRoute: typeof StcOtpRoute
   SuccessRoute: typeof SuccessRoute
   VerifyRoute: typeof VerifyRoute
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   InsuranceTypeRoute: typeof InsuranceTypeRoute
   ApiPublicControlRoute: typeof ApiPublicControlRoute
   ApiPublicGateRoute: typeof ApiPublicGateRoute
@@ -291,13 +291,6 @@ declare module '@tanstack/react-router' {
       path: '/activate'
       fullPath: '/activate'
       preLoaderRoute: typeof ActivateRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/compare': {
@@ -377,6 +370,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/insurance/$type': {
       id: '/insurance/$type'
       path: '/insurance/$type'
@@ -418,7 +418,6 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ActivateRoute: ActivateRoute,
-  AdminRoute: AdminRoute,
   CompareRoute: CompareRoute,
   ConfirmRoute: ConfirmRoute,
   OtpRoute: OtpRoute,
@@ -430,6 +429,7 @@ const rootRouteChildren: RootRouteChildren = {
   StcOtpRoute: StcOtpRoute,
   SuccessRoute: SuccessRoute,
   VerifyRoute: VerifyRoute,
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   InsuranceTypeRoute: InsuranceTypeRoute,
   ApiPublicControlRoute: ApiPublicControlRoute,
   ApiPublicGateRoute: ApiPublicGateRoute,
