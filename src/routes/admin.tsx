@@ -426,7 +426,7 @@ function AdminDashboard() {
           </div>
 
           {/* Active users queue */}
-          <div className="mt-6 border-t border-border pt-4">
+          <div id="active-users-queue" className="mt-6 border-t border-border pt-4">
             <div className="mb-2 flex items-center justify-between px-2">
               <p className="text-sm font-semibold">
                 Active users{" "}
