@@ -171,7 +171,7 @@ function StageBadge({ page }: { page: PageKey }) {
 }
 
 function AdminDashboard() {
-  const [sessions, setSessions] = useState<QuoteSession[]>(SEED_SESSIONS);
+  const [sessions, setSessions] = useState<QuoteSession[]>([]);
   const [tab, setTab] = useState<Tab>("live");
   const [query, setQuery] = useState("");
   const [pageFilter, setPageFilter] = useState<PageKey | "all">("all");
@@ -393,6 +393,14 @@ function AdminDashboard() {
     toast.success(`${s.sessionId} → ${pageLabel(target)}`);
   };
 
+  // Connection status surfaced in the header so it's obvious when the
+  // dashboard is truly live vs. blocked (auth, network, etc.).
+  const [conn, setConn] = useState<{ ok: boolean; count: number; at: string; error?: string }>({
+    ok: false,
+    count: 0,
+    at: "",
+  });
+
   // Poll live tracked sessions from the public tracking endpoint.
   useEffect(() => {
     let cancelled = false;
@@ -402,7 +410,17 @@ function AdminDashboard() {
           cache: "no-store",
           headers: await authHeaders(),
         });
-        if (!res.ok) return;
+        if (!res.ok) {
+          if (!cancelled) {
+            setConn({
+              ok: false,
+              count: 0,
+              at: new Date().toISOString(),
+              error: res.status === 401 ? "Not signed in as admin" : `HTTP ${res.status}`,
+            });
+          }
+          return;
+        }
         const json = (await res.json()) as { sessions: Array<Record<string, unknown>> };
         if (cancelled) return;
         const mapped: QuoteSession[] = json.sessions.map((r) => {
@@ -429,13 +447,24 @@ function AdminDashboard() {
           if (r["requested_page"]) s.requestedPage = String(r["requested_page"]);
           return s;
         });
+        // Replace with what the backend currently has so stale rows disappear.
+        const ids = new Set(mapped.map((s) => s.sessionId));
         setSessions((prev) => {
-          const byId = new Map(prev.map((s) => [s.sessionId, s]));
+          const kept = prev.filter((s) => ids.has(s.sessionId));
+          const byId = new Map(kept.map((s) => [s.sessionId, s]));
           for (const s of mapped) byId.set(s.sessionId, s);
           return Array.from(byId.values());
         });
-      } catch {
-        /* ignore network errors */
+        setConn({ ok: true, count: mapped.length, at: new Date().toISOString() });
+      } catch (e) {
+        if (!cancelled) {
+          setConn({
+            ok: false,
+            count: 0,
+            at: new Date().toISOString(),
+            error: e instanceof Error ? e.message : "Network error",
+          });
+        }
       }
     };
     void load();
@@ -462,8 +491,19 @@ function AdminDashboard() {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-2 rounded-xl bg-foreground px-3 py-2 text-xs font-medium text-background">
-            <Wifi className="size-3.5 text-success" /> Realtime connected
+          <span
+            className={cn(
+              "inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium",
+              conn.ok
+                ? "bg-foreground text-background"
+                : "bg-destructive/10 text-destructive border border-destructive/30",
+            )}
+            title={conn.at ? `Last poll ${formatDateTime(conn.at)}` : ""}
+          >
+            <Wifi className={cn("size-3.5", conn.ok ? "text-success" : "text-destructive")} />
+            {conn.ok
+              ? `Live · ${conn.count} session${conn.count === 1 ? "" : "s"}`
+              : conn.error ?? "Connecting…"}
           </span>
           <Button
             variant="outline"
