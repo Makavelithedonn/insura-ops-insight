@@ -336,6 +336,7 @@ export type Database = {
           declared_value: number | null
           insurer_company: string | null
           insurer_offer_sar: number | null
+          ip_address: string | null
           model_year: number | null
           national_id: string | null
           phone: string | null
@@ -353,6 +354,7 @@ export type Database = {
           declared_value?: number | null
           insurer_company?: string | null
           insurer_offer_sar?: number | null
+          ip_address?: string | null
           model_year?: number | null
           national_id?: string | null
           phone?: string | null
@@ -370,6 +372,7 @@ export type Database = {
           declared_value?: number | null
           insurer_company?: string | null
           insurer_offer_sar?: number | null
+          ip_address?: string | null
           model_year?: number | null
           national_id?: string | null
           phone?: string | null
