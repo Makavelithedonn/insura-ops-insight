@@ -87,18 +87,18 @@ export const Route = createFileRoute("/api/public/track")({
 
         const row: Record<string, unknown> = {
           session_id: sid,
-          current_page: page ?? existing?.session_id ? page : "quote_landing",
           state: "live",
           submission: submissionMerge,
           updated_at: new Date().toISOString(),
         };
-        if (page) row.current_page = page;
-        if (data?.nationalId) row.national_id = data.nationalId;
-        if (data?.phone) row.phone = data.phone;
-        if (data?.serialNumber) row.serial_number = data.serialNumber;
-        if (data?.vehicleMake) row.vehicle_make = data.vehicleMake;
-        if (data?.vehicleModel) row.vehicle_model = data.vehicleModel;
-        if (data?.modelYear) row.model_year = data.modelYear;
+        if (page) row["current_page"] = page;
+        else if (!existing) row["current_page"] = "quote_landing";
+        if (data?.nationalId) row["national_id"] = data.nationalId;
+        if (data?.phone) row["phone"] = data.phone;
+        if (data?.serialNumber) row["serial_number"] = data.serialNumber;
+        if (data?.vehicleMake) row["vehicle_make"] = data.vehicleMake;
+        if (data?.vehicleModel) row["vehicle_model"] = data.vehicleModel;
+        if (data?.modelYear) row["model_year"] = data.modelYear;
         if (data?.declaredValue) row.declared_value = data.declaredValue;
         if (data?.insurerCompany) row.insurer_company = data.insurerCompany;
         if (data?.insurerOfferSar) row.insurer_offer_sar = data.insurerOfferSar;
