@@ -11,6 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as CompareRouteImport } from './routes/compare'
+import { Route as PaymentRouteImport } from './routes/payment'
+import { Route as PhoneRouteImport } from './routes/phone'
+import { Route as PhoneOtpRouteImport } from './routes/phone-otp'
+import { Route as RegRouteImport } from './routes/reg'
+import { Route as InsuranceTypeRouteImport } from './routes/insurance.$type'
 import { Route as ApiPublicSessionsRouteImport } from './routes/api/public/sessions'
 import { Route as ApiPublicTrackRouteImport } from './routes/api/public/track'
 
@@ -22,6 +28,36 @@ const IndexRoute = IndexRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompareRoute = CompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaymentRoute = PaymentRouteImport.update({
+  id: '/payment',
+  path: '/payment',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PhoneRoute = PhoneRouteImport.update({
+  id: '/phone',
+  path: '/phone',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PhoneOtpRoute = PhoneOtpRouteImport.update({
+  id: '/phone-otp',
+  path: '/phone-otp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegRoute = RegRouteImport.update({
+  id: '/reg',
+  path: '/reg',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InsuranceTypeRoute = InsuranceTypeRouteImport.update({
+  id: '/insurance/$type',
+  path: '/insurance/$type',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicSessionsRoute = ApiPublicSessionsRouteImport.update({
@@ -38,12 +74,24 @@ const ApiPublicTrackRoute = ApiPublicTrackRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/compare': typeof CompareRoute
+  '/payment': typeof PaymentRoute
+  '/phone': typeof PhoneRoute
+  '/phone-otp': typeof PhoneOtpRoute
+  '/reg': typeof RegRoute
+  '/insurance/$type': typeof InsuranceTypeRoute
   '/api/public/sessions': typeof ApiPublicSessionsRoute
   '/api/public/track': typeof ApiPublicTrackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/compare': typeof CompareRoute
+  '/payment': typeof PaymentRoute
+  '/phone': typeof PhoneRoute
+  '/phone-otp': typeof PhoneOtpRoute
+  '/reg': typeof RegRoute
+  '/insurance/$type': typeof InsuranceTypeRoute
   '/api/public/sessions': typeof ApiPublicSessionsRoute
   '/api/public/track': typeof ApiPublicTrackRoute
 }
@@ -51,20 +99,63 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/compare': typeof CompareRoute
+  '/payment': typeof PaymentRoute
+  '/phone': typeof PhoneRoute
+  '/phone-otp': typeof PhoneOtpRoute
+  '/reg': typeof RegRoute
+  '/insurance/$type': typeof InsuranceTypeRoute
   '/api/public/sessions': typeof ApiPublicSessionsRoute
   '/api/public/track': typeof ApiPublicTrackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/api/public/sessions' | '/api/public/track'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/compare'
+    | '/payment'
+    | '/phone'
+    | '/phone-otp'
+    | '/reg'
+    | '/insurance/$type'
+    | '/api/public/sessions'
+    | '/api/public/track'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/api/public/sessions' | '/api/public/track'
-  id: '__root__' | '/' | '/admin' | '/api/public/sessions' | '/api/public/track'
+  to:
+    | '/'
+    | '/admin'
+    | '/compare'
+    | '/payment'
+    | '/phone'
+    | '/phone-otp'
+    | '/reg'
+    | '/insurance/$type'
+    | '/api/public/sessions'
+    | '/api/public/track'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/compare'
+    | '/payment'
+    | '/phone'
+    | '/phone-otp'
+    | '/reg'
+    | '/insurance/$type'
+    | '/api/public/sessions'
+    | '/api/public/track'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  CompareRoute: typeof CompareRoute
+  PaymentRoute: typeof PaymentRoute
+  PhoneRoute: typeof PhoneRoute
+  PhoneOtpRoute: typeof PhoneOtpRoute
+  RegRoute: typeof RegRoute
+  InsuranceTypeRoute: typeof InsuranceTypeRoute
   ApiPublicSessionsRoute: typeof ApiPublicSessionsRoute
   ApiPublicTrackRoute: typeof ApiPublicTrackRoute
 }
@@ -83,6 +174,48 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compare': {
+      id: '/compare'
+      path: '/compare'
+      fullPath: '/compare'
+      preLoaderRoute: typeof CompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payment': {
+      id: '/payment'
+      path: '/payment'
+      fullPath: '/payment'
+      preLoaderRoute: typeof PaymentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/phone': {
+      id: '/phone'
+      path: '/phone'
+      fullPath: '/phone'
+      preLoaderRoute: typeof PhoneRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/phone-otp': {
+      id: '/phone-otp'
+      path: '/phone-otp'
+      fullPath: '/phone-otp'
+      preLoaderRoute: typeof PhoneOtpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reg': {
+      id: '/reg'
+      path: '/reg'
+      fullPath: '/reg'
+      preLoaderRoute: typeof RegRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/insurance/$type': {
+      id: '/insurance/$type'
+      path: '/insurance/$type'
+      fullPath: '/insurance/$type'
+      preLoaderRoute: typeof InsuranceTypeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/sessions': {
@@ -105,6 +238,12 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  CompareRoute: CompareRoute,
+  PaymentRoute: PaymentRoute,
+  PhoneRoute: PhoneRoute,
+  PhoneOtpRoute: PhoneOtpRoute,
+  RegRoute: RegRoute,
+  InsuranceTypeRoute: InsuranceTypeRoute,
   ApiPublicSessionsRoute: ApiPublicSessionsRoute,
   ApiPublicTrackRoute: ApiPublicTrackRoute,
 }
