@@ -58,6 +58,12 @@ export const Route = createFileRoute("/api/public/track")({
         }
         const { sid, type, page, data } = parsed.data;
 
+        // Capture the visitor's real IP (Cloudflare / proxy headers)
+        const ip =
+          request.headers.get("cf-connecting-ip") ||
+          request.headers.get("x-real-ip") ||
+          (request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null);
+
         const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
         const url = process.env["SUPABASE_URL"]!;
         const supabase = createClient(url, key, {
