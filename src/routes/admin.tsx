@@ -262,6 +262,49 @@ function AdminDashboard() {
     toast.success(`${s.sessionId} → ${pageLabel(target)}`);
   };
 
+  // Poll live tracked sessions from the public tracking endpoint.
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const res = await fetch("/api/public/sessions", { cache: "no-store" });
+        if (!res.ok) return;
+        const json = (await res.json()) as { sessions: Array<Record<string, unknown>> };
+        if (cancelled) return;
+        const mapped: QuoteSession[] = json.sessions.map((r) => ({
+          sessionId: String(r["session_id"] ?? ""),
+          nationalId: String(r["national_id"] ?? ""),
+          phone: String(r["phone"] ?? ""),
+          serialNumber: String(r["serial_number"] ?? ""),
+          vehicleMake: String(r["vehicle_make"] ?? ""),
+          vehicleModel: String(r["vehicle_model"] ?? ""),
+          modelYear: Number(r["model_year"] ?? 0),
+          declaredValue: Number(r["declared_value"] ?? 0),
+          insurerCompany: String(r["insurer_company"] ?? ""),
+          insurerOfferSar: Number(r["insurer_offer_sar"] ?? 0),
+          currentPage: (r["current_page"] as QuoteSession["currentPage"]) ?? "quote_landing",
+          state: (r["state"] as QuoteSession["state"]) ?? "live",
+          createdAt: String(r["created_at"] ?? new Date().toISOString()),
+          updatedAt: String(r["updated_at"] ?? new Date().toISOString()),
+          submission: (r["submission"] as QuoteSession["submission"]) ?? {},
+        }));
+        setSessions((prev) => {
+          const byId = new Map(prev.map((s) => [s.sessionId, s]));
+          for (const s of mapped) byId.set(s.sessionId, s);
+          return Array.from(byId.values());
+        });
+      } catch {
+        /* ignore network errors */
+      }
+    };
+    void load();
+    const t = setInterval(load, 4000);
+    return () => {
+      cancelled = true;
+      clearInterval(t);
+    };
+  }, []);
+
 
   return (
     <div className="min-h-screen bg-background px-6 py-6 lg:px-10 lg:py-8">
