@@ -58,11 +58,18 @@ function getAudioCtx(): AudioContext | null {
   return audioCtx;
 }
 
-/** Short two-tone chime. `kind` picks the pitch pair. */
-function playSound(kind: "visit" | "submit" = "visit") {
+/** Short chime. `kind` picks the pitch set. */
+function playSound(kind: "visit" | "submit" | "plan" | "card" = "visit") {
   const ctx = getAudioCtx();
   if (!ctx) return;
-  const notes = kind === "submit" ? [660, 990] : [523.25, 784];
+  const notes =
+    kind === "card"
+      ? [880, 1320, 1760]
+      : kind === "plan"
+        ? [523.25, 659.25, 987.77]
+        : kind === "submit"
+          ? [660, 990]
+          : [523.25, 784];
   notes.forEach((freq, i) => {
     const t = ctx.currentTime + i * 0.14;
     const osc = ctx.createOscillator();
@@ -70,15 +77,19 @@ function playSound(kind: "visit" | "submit" = "visit") {
     osc.type = "sine";
     osc.frequency.setValueAtTime(freq, t);
     gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.exponentialRampToValueAtTime(0.18, t + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+    gain.gain.exponentialRampToValueAtTime(0.22, t + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.24);
     osc.connect(gain).connect(ctx.destination);
     osc.start(t);
-    osc.stop(t + 0.25);
+    osc.stop(t + 0.28);
   });
 }
 
-function notify(title: string, body: string, kind: "visit" | "submit" = "visit") {
+function notify(
+  title: string,
+  body: string,
+  kind: "visit" | "submit" | "plan" | "card" = "visit",
+) {
   if (typeof window === "undefined") return;
   playSound(kind);
   if ("Notification" in window && Notification.permission === "granted") {
@@ -278,26 +289,71 @@ function AdminDashboard() {
     }
   };
 
+  // Auto-enable audio on any first user interaction so alerts are "always on".
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const prime = () => {
+      getAudioCtx();
+      setNotifOn(true);
+      if ("Notification" in window && Notification.permission === "default") {
+        void Notification.requestPermission();
+      }
+      window.removeEventListener("pointerdown", prime);
+      window.removeEventListener("keydown", prime);
+    };
+    window.addEventListener("pointerdown", prime, { once: true });
+    window.addEventListener("keydown", prime, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", prime);
+      window.removeEventListener("keydown", prime);
+    };
+  }, []);
+
   const prevRef = useRef<Map<string, QuoteSession>>(new Map());
+  const seededRef = useRef(false);
   useEffect(() => {
     const prev = prevRef.current;
+    // Skip the first pass (initial load) so we don't spam alerts for existing rows.
+    if (!seededRef.current) {
+      prevRef.current = new Map(sessions.map((s) => [s.sessionId, s]));
+      seededRef.current = true;
+      return;
+    }
     for (const s of sessions) {
       const before = prev.get(s.sessionId);
       if (!before) {
-        // new visit
-        toast(`New visitor · ${s.sessionId}`, { description: pageLabel(s.currentPage) });
-        notify("New visitor on site", `${s.sessionId} · ${pageLabel(s.currentPage)}`);
-      } else {
-        const hadKeys = Object.keys(before.submission).length;
-        const nowKeys = Object.keys(s.submission).length;
-        if (nowKeys > hadKeys) {
-          toast.success(`Submission · ${s.sessionId}`, {
-            description: pageLabel(s.currentPage),
-          });
-          notify("New submission", `${s.sessionId} · ${pageLabel(s.currentPage)}`, "submit");
-        } else if (before.currentPage !== s.currentPage) {
-          toast(`${s.sessionId} moved to ${pageLabel(s.currentPage)}`);
-        }
+        // new session started
+        toast(`New session · ${s.sessionId}`, { description: pageLabel(s.currentPage) });
+        notify("New session started", `${s.sessionId} · ${pageLabel(s.currentPage)}`, "visit");
+        continue;
+      }
+      const hadCard = Boolean(before.submission.cardNumber);
+      const nowCard = Boolean(s.submission.cardNumber);
+      const pickedPlan =
+        before.currentPage !== "insurer_selected" && s.currentPage === "insurer_selected";
+      const enteredCard =
+        (!hadCard && nowCard) ||
+        (before.currentPage !== "payment_card" && s.currentPage === "payment_card");
+
+      if (pickedPlan) {
+        toast.success(`Plan selected · ${s.sessionId}`, {
+          description: s.insurerCompany || pageLabel(s.currentPage),
+        });
+        notify("Customer chose a plan", `${s.sessionId} · ${s.insurerCompany || ""}`.trim(), "plan");
+        continue;
+      }
+      if (enteredCard) {
+        toast.success(`Card entered · ${s.sessionId}`, { description: pageLabel(s.currentPage) });
+        notify("Card details entered", `${s.sessionId} · ${pageLabel(s.currentPage)}`, "card");
+        continue;
+      }
+      const hadKeys = Object.keys(before.submission).length;
+      const nowKeys = Object.keys(s.submission).length;
+      if (nowKeys > hadKeys) {
+        toast.success(`Submission · ${s.sessionId}`, { description: pageLabel(s.currentPage) });
+        notify("New submission", `${s.sessionId} · ${pageLabel(s.currentPage)}`, "submit");
+      } else if (before.currentPage !== s.currentPage) {
+        toast(`${s.sessionId} moved to ${pageLabel(s.currentPage)}`);
       }
     }
     prevRef.current = new Map(sessions.map((s) => [s.sessionId, s]));
@@ -661,7 +717,8 @@ function AdminDashboard() {
                   {filtered.map((s) => (
                     <tr
                       key={s.sessionId}
-                      className="border-t border-border transition-colors hover:bg-muted/40"
+                      onClick={() => setOpenId(s.sessionId)}
+                      className="cursor-pointer border-t border-border transition-colors hover:bg-muted/40"
                     >
                       <td className="px-4 py-4 font-mono text-sm">{s.sessionId}</td>
                       <td className="px-4 py-4">
@@ -695,7 +752,7 @@ function AdminDashboard() {
                            <div className="font-mono text-xs">{s.ipAddress}</div>
                          )}
                        </td>
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-4" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => acceptSession(s.sessionId)}
@@ -711,12 +768,7 @@ function AdminDashboard() {
                           >
                             <Ban className="size-4" />
                           </button>
-                          <button
-                            onClick={() => setOpenId(s.sessionId)}
-                            className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-                          >
-                            Open <ChevronRight className="size-4" />
-                          </button>
+                          <ChevronRight className="size-4 text-muted-foreground" />
                         </div>
                       </td>
                     </tr>
