@@ -764,10 +764,21 @@ function AdminDashboard() {
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="truncate font-mono text-sm">{s.sessionId}</p>
+                        <p className="flex items-center gap-1.5 truncate font-mono text-sm">
+                          <span
+                            className="size-2 shrink-0 rounded-full bg-success"
+                            title="Active"
+                          />
+                          {s.sessionId}
+                        </p>
                         <p className="truncate text-xs text-muted-foreground">
                           {maskNationalId(s.nationalId)} · {maskPhone(s.phone)}
                         </p>
+                        {s.country && (
+                          <p className="mt-0.5 truncate text-xs font-medium text-success">
+                            {s.country}
+                          </p>
+                        )}
                       </div>
                       <StageBadge page={s.currentPage} />
                     </div>
