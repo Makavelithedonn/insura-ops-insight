@@ -198,7 +198,7 @@ export async function submitStep(
     .from("application_steps")
     .update({
       status: "submitted",
-      data,
+      data: data as never,
       submitted_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })
@@ -211,14 +211,15 @@ export async function submitStep(
     .eq("step_id", step.id)
     .order("version_number", { ascending: false })
     .limit(1);
-  const nextVersion = (versions && versions.length > 0 ? versions[0].version_number : 0) + 1;
+  const lastVersion = versions && versions.length > 0 ? versions[0]?.version_number : 0;
+  const nextVersion = (lastVersion ?? 0) + 1;
 
   await supabase.from("submission_versions").insert({
     application_id: app.id,
     step_id: step.id,
     step_key: stepKey,
     version_number: nextVersion,
-    data,
+    data: data as never,
   });
 
   await supabase
