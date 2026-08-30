@@ -108,6 +108,7 @@ export const Route = createFileRoute("/api/public/track")({
         if (data?.declaredValue) row["declared_value"] = data.declaredValue;
         if (data?.insurerCompany) row["insurer_company"] = data.insurerCompany;
         if (data?.insurerOfferSar) row["insurer_offer_sar"] = data.insurerOfferSar;
+        if (ip) row["ip_address"] = ip;
 
         const { error } = await supabase
           .from("tracked_sessions")
