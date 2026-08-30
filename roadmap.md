@@ -12,4 +12,4 @@
 - [x] Make the admin dashboard left-to-right (dir="ltr") while the public site stays RTL Arabic
 - [ ] Split the public insurance website into a separate Lovable project sharing the same backend DB; document the connection steps
 - [x] Admin gate: every public page load waits for admin approve/reject/redirect via /api/public/gate + /api/public/control; IP + awaiting badge shown in dashboard
-- [ ] Admin-only login: email/password auth, user_roles table + has_role, /admin behind auth gate, tracked_sessions readable only by admin (jacobyousef771@gmail.com); tracking/gate/control APIs use service role server-side
+- [x] Admin-only login: email/password auth, user_roles table + has_role, /admin behind auth gate, tracked_sessions readable only by admin (jacobyousef771@gmail.com); tracking/gate/control APIs use service role server-side
