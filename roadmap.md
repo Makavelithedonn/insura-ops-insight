@@ -9,3 +9,4 @@
 - [ ] Capture visitor IP address in /api/public/track, add ip_address column to tracked_sessions; dashboard shows real sessions + applications only (no mock/demo data)
 - [ ] Funnel order: Home → Quote → Compare → Register → Payment → OTP → Phone → Phone-OTP → STC → STC-OTP → Confirm → Verify → Activate → Success (phone pages moved after payment; new /otp page after payment)
 - [ ] Keep dashboard on a separate domain from the public insurance site (requires two Lovable projects sharing one backend DB)
+- [x] Remove all mock/seed dashboard sessions; show only live tracked_sessions
