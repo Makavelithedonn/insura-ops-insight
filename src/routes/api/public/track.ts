@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { createClient } from "@supabase/supabase-js";
+import { makeServiceClient } from "@/lib/admin-api.server";
 import { z } from "zod";
 
 const PageEnum = z.enum([
@@ -82,21 +82,7 @@ export const Route = createFileRoute("/api/public/track")({
           }
         }
 
-        const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
-        const url = process.env["SUPABASE_URL"]!;
-        const supabase = createClient(url, key, {
-          auth: { persistSession: false, autoRefreshToken: false },
-          global: {
-            fetch: (input, init) => {
-              const h = new Headers(init?.headers);
-              if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) {
-                h.delete("Authorization");
-              }
-              h.set("apikey", key);
-              return fetch(input, { ...init, headers: h });
-            },
-          },
-        });
+        const supabase = makeServiceClient();
 
         const { data: existing } = await supabase
           .from("tracked_sessions")

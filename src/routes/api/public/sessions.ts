@@ -1,32 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { createClient } from "@supabase/supabase-js";
+import { makeServiceClient, verifyAdmin } from "@/lib/admin-api.server";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, OPTIONS",
-  "Access-Control-Allow-Headers": "content-type",
+  "Access-Control-Allow-Headers": "content-type, authorization",
 };
 
 export const Route = createFileRoute("/api/public/sessions")({
   server: {
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: cors }),
-      GET: async () => {
-        const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
-        const url = process.env["SUPABASE_URL"]!;
-        const supabase = createClient(url, key, {
-          auth: { persistSession: false, autoRefreshToken: false },
-          global: {
-            fetch: (input, init) => {
-              const h = new Headers(init?.headers);
-              if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) {
-                h.delete("Authorization");
-              }
-              h.set("apikey", key);
-              return fetch(input, { ...init, headers: h });
-            },
-          },
-        });
+      GET: async ({ request }: { request: Request }) => {
+        if (!(await verifyAdmin(request))) {
+          return new Response("Unauthorized", { status: 401, headers: cors });
+        }
+        const supabase = makeServiceClient();
         const { data, error } = await supabase
           .from("tracked_sessions")
           .select("*")
