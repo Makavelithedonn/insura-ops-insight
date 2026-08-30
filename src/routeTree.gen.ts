@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as ApiPublicSessionsRouteImport } from './routes/api/public/sessions'
 import { Route as ApiPublicTrackRouteImport } from './routes/api/public/track'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +24,11 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSessionsRoute = ApiPublicSessionsRouteImport.update({
+  id: '/api/public/sessions',
+  path: '/api/public/sessions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicTrackRoute = ApiPublicTrackRouteImport.update({
   id: '/api/public/track',
   path: '/api/public/track',
@@ -32,30 +38,34 @@ const ApiPublicTrackRoute = ApiPublicTrackRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/api/public/sessions': typeof ApiPublicSessionsRoute
   '/api/public/track': typeof ApiPublicTrackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/api/public/sessions': typeof ApiPublicSessionsRoute
   '/api/public/track': typeof ApiPublicTrackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/api/public/sessions': typeof ApiPublicSessionsRoute
   '/api/public/track': typeof ApiPublicTrackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/api/public/track'
+  fullPaths: '/' | '/admin' | '/api/public/sessions' | '/api/public/track'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/api/public/track'
-  id: '__root__' | '/' | '/admin' | '/api/public/track'
+  to: '/' | '/admin' | '/api/public/sessions' | '/api/public/track'
+  id: '__root__' | '/' | '/admin' | '/api/public/sessions' | '/api/public/track'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  ApiPublicSessionsRoute: typeof ApiPublicSessionsRoute
   ApiPublicTrackRoute: typeof ApiPublicTrackRoute
 }
 
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/sessions': {
+      id: '/api/public/sessions'
+      path: '/api/public/sessions'
+      fullPath: '/api/public/sessions'
+      preLoaderRoute: typeof ApiPublicSessionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/track': {
       id: '/api/public/track'
       path: '/api/public/track'
@@ -88,6 +105,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  ApiPublicSessionsRoute: ApiPublicSessionsRoute,
   ApiPublicTrackRoute: ApiPublicTrackRoute,
 }
 export const routeTree = rootRouteImport
