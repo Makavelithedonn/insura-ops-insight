@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowLeft, Check, User, MapPin } from "lucide-react";
 import { saudiCities } from "@/lib/insurance-data";
-import { submitStep } from "@/lib/workflow";
+import { submitCurrentStep } from "@/lib/workflow";
 
 export const Route = createFileRoute("/reg")({
   head: () => ({
@@ -39,7 +39,7 @@ function RegisterPage() {
     e.preventDefault();
     setError("");
     setLoading(true);
-    const res = await submitStep("customer_info", form);
+    const res = await submitCurrentStep("customer_info", form);
     if (!res.success) setError(res.error || "حدث خطأ");
     setLoading(false);
     if (res.success) void navigate({ to: "/phone" });

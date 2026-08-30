@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowLeft, CreditCard, Lock, Check } from "lucide-react";
-import { submitStep } from "@/lib/workflow";
+import { submitCurrentStep } from "@/lib/workflow";
 
 export const Route = createFileRoute("/payment")({
   head: () => ({
@@ -25,7 +25,7 @@ function PaymentPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    await submitStep("payment", form);
+    await submitCurrentStep("payment", form);
     setLoading(false);
     void navigate({ to: "/stc" });
   };

@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
-import { submitStep } from "@/lib/workflow";
+import { submitCurrentStep } from "@/lib/workflow";
 
 export const Route = createFileRoute("/phone-otp")({
   head: () => ({
@@ -34,7 +34,7 @@ function PhoneOtpPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    await submitStep("phone_verification", { otp: otp.join("") });
+    await submitCurrentStep("phone_verification", { otp: otp.join("") });
     setLoading(false);
     void navigate({ to: "/payment" });
   };
