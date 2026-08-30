@@ -72,7 +72,7 @@ function HomePage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    void navigate({ to: "/insurance/car" });
+    void navigate({ to: "/insurance/$type", params: { type: "car" } });
   };
 
   return (
