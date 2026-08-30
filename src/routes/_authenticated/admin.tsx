@@ -288,7 +288,7 @@ function AdminDashboard() {
   };
 
   // Notifications: request permission + track new visits / submissions.
-  const [notifOn, setNotifOn] = useState(false);
+  const [notifOn, setNotifOn] = useState(true);
   const enableNotifications = async () => {
     if (typeof window === "undefined" || !("Notification" in window)) {
       toast.error("Browser notifications not supported");
