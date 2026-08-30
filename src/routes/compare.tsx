@@ -61,10 +61,11 @@ function ComparePage() {
     if (!selectedId) return;
     setLoading(true);
     const offer = offers.find((o) => o.companyId === selectedId);
-    await submitStep("insurer_selected", {
+    if (offer) await setInsurer(offer.companyName, offer.price);
+    await submitCurrentStep("insurer_selected", {
       insurer_company: offer?.companyName,
       insurer_offer_sar: offer?.price,
-    });
+    }).catch(() => {});
     setLoading(false);
     void navigate({ to: "/reg" });
   };
