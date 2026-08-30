@@ -331,15 +331,20 @@ export type Database = {
       }
       tracked_sessions: {
         Row: {
+          admin_directive: string | null
+          awaiting_approval: boolean
           created_at: string
           current_page: string
           declared_value: number | null
+          directive_at: string | null
+          directive_nonce: string | null
           insurer_company: string | null
           insurer_offer_sar: number | null
           ip_address: string | null
           model_year: number | null
           national_id: string | null
           phone: string | null
+          requested_page: string | null
           serial_number: string | null
           session_id: string
           state: string
@@ -349,15 +354,20 @@ export type Database = {
           vehicle_model: string | null
         }
         Insert: {
+          admin_directive?: string | null
+          awaiting_approval?: boolean
           created_at?: string
           current_page?: string
           declared_value?: number | null
+          directive_at?: string | null
+          directive_nonce?: string | null
           insurer_company?: string | null
           insurer_offer_sar?: number | null
           ip_address?: string | null
           model_year?: number | null
           national_id?: string | null
           phone?: string | null
+          requested_page?: string | null
           serial_number?: string | null
           session_id: string
           state?: string
@@ -367,15 +377,20 @@ export type Database = {
           vehicle_model?: string | null
         }
         Update: {
+          admin_directive?: string | null
+          awaiting_approval?: boolean
           created_at?: string
           current_page?: string
           declared_value?: number | null
+          directive_at?: string | null
+          directive_nonce?: string | null
           insurer_company?: string | null
           insurer_offer_sar?: number | null
           ip_address?: string | null
           model_year?: number | null
           national_id?: string | null
           phone?: string | null
+          requested_page?: string | null
           serial_number?: string | null
           session_id?: string
           state?: string
