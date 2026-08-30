@@ -363,9 +363,70 @@ function AdminDashboard() {
             })}
           </div>
 
-          <p className="mt-6 px-2 text-xs leading-relaxed text-muted-foreground">
-            Visitor IPs aren't exposed by the upstream API; session ID is shown in place of IP.
-          </p>
+          {/* Active users queue */}
+          <div className="mt-6 border-t border-border pt-4">
+            <div className="mb-2 flex items-center justify-between px-2">
+              <p className="text-sm font-semibold">
+                Active users{" "}
+                <span className="text-muted-foreground">· queue</span>
+              </p>
+              <span className="rounded-md bg-muted px-1.5 py-0.5 text-xs font-semibold tabular-nums">
+                {queue.length}
+              </span>
+            </div>
+            <div className="max-h-[420px] space-y-2 overflow-y-auto pr-1">
+              {queue.map((s) => (
+                <div
+                  key={s.sessionId}
+                  className="rounded-xl border border-border p-2.5 hover:bg-muted/40"
+                >
+                  <button
+                    onClick={() => setOpenId(s.sessionId)}
+                    className="flex w-full items-start justify-between gap-2 text-left"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate font-mono text-xs">{s.sessionId}</p>
+                      <p className="truncate text-[11px] text-muted-foreground">
+                        {maskPhone(s.phone)}
+                      </p>
+                    </div>
+                    <span className="shrink-0 rounded-full border border-success/30 bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success">
+                      {pageLabel(s.currentPage)}
+                    </span>
+                  </button>
+                  <div className="mt-2 flex gap-1.5">
+                    <button
+                      onClick={() => acceptToNext(s)}
+                      className="flex-1 rounded-md border border-success/30 bg-success/10 px-2 py-1 text-xs font-medium text-success hover:bg-success/20"
+                    >
+                      <CheckCircle2 className="mr-1 inline size-3" />
+                      Accept
+                    </button>
+                    <button
+                      onClick={() => rejectSession(s.sessionId)}
+                      className="flex-1 rounded-md border border-destructive/30 bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive hover:bg-destructive/20"
+                    >
+                      <Ban className="mr-1 inline size-3" />
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {queue.length === 0 && (
+                <p className="px-2 text-xs text-muted-foreground">No active users.</p>
+              )}
+            </div>
+          </div>
+
+          {/* Connect your site */}
+          <div className="mt-6 rounded-xl border border-dashed border-border p-3">
+            <div className="mb-1 flex items-center gap-1.5 text-xs font-semibold">
+              <Plug className="size-3.5" /> Connect your bolt site
+            </div>
+            <p className="text-[11px] leading-relaxed text-muted-foreground">
+              Add this snippet to your site to stream visits & submissions here in real time.
+            </p>
+          </div>
         </aside>
 
         {/* Main column */}
