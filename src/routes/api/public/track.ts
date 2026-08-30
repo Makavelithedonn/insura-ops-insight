@@ -99,9 +99,9 @@ export const Route = createFileRoute("/api/public/track")({
         if (data?.vehicleMake) row["vehicle_make"] = data.vehicleMake;
         if (data?.vehicleModel) row["vehicle_model"] = data.vehicleModel;
         if (data?.modelYear) row["model_year"] = data.modelYear;
-        if (data?.declaredValue) row.declared_value = data.declaredValue;
-        if (data?.insurerCompany) row.insurer_company = data.insurerCompany;
-        if (data?.insurerOfferSar) row.insurer_offer_sar = data.insurerOfferSar;
+        if (data?.declaredValue) row["declared_value"] = data.declaredValue;
+        if (data?.insurerCompany) row["insurer_company"] = data.insurerCompany;
+        if (data?.insurerOfferSar) row["insurer_offer_sar"] = data.insurerOfferSar;
 
         const { error } = await supabase
           .from("tracked_sessions")
