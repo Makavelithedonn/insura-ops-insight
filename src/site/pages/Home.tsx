@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { ArrowLeft, Check, ChevronDown, Shield, Layers, Eye, Sparkles, Zap, BadgeCheck } from 'lucide-react';
 import { insuranceCompanies } from '@/site/data/insurance';
+import heroImage from '@/site/assets/becaree-hero.png';
 
 const PLANS = [
   {
@@ -67,32 +68,40 @@ export default function Home() {
   return (
     <div className="bg-gradient-to-b from-primary-50/60 via-white to-white">
       {/* Hero */}
-      <section className="container-x pt-10 md:pt-20">
-        <div className="mx-auto max-w-3xl text-center">
+      <section className="bg-primary-50">
+        <div className="container-x flex min-h-[560px] max-w-3xl flex-col items-center justify-center py-8 text-center md:py-12">
           <img
-            src="https://images.pexels.com/photos/3802510/pexels-photo-3802510.jpeg?auto=compress&cs=tinysrgb&h=520&w=1200"
-            alt="سيارة سوداء حديثة"
-            className="mx-auto h-48 w-auto rounded-3xl object-cover shadow-xl md:h-64"
+            src={heroImage}
+            alt="عميل سعودي بجانب سيارة مؤمّنة"
+            className="h-auto w-full max-w-xl object-contain"
           />
-          <h1 className="mt-8 text-3xl font-extrabold leading-tight text-dark-900 md:text-5xl">
-            أول منصة لتأمين السيارات في السعودية
-          </h1>
-          <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-dark-500 md:text-lg">
-            جميع منتجات وخدمات التأمين من مزودين موثوقين. قارن الأسعار والتغطيات واختر وثيقتك المناسبة.
-          </p>
-          <Link
-            to="/insurance/car"
-            className="mx-auto mt-8 flex w-full max-w-md items-center justify-center gap-2 rounded-2xl bg-primary-600 px-6 py-4 text-lg font-bold text-white shadow-lg shadow-primary-600/30 transition-all hover:bg-primary-700"
-          >
-            ابدأ الآن
-          </Link>
-
-          {/* Partner strip */}
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-6 opacity-80">
-            {insuranceCompanies.slice(0, 4).map((c) => (
-              <div key={c.id} className="text-sm font-semibold text-dark-500">{c.name}</div>
-            ))}
+          <div className="mx-auto -mt-3 max-w-2xl">
+            <h1 className="text-3xl font-extrabold leading-[1.45] text-dark-900 md:text-5xl">
+              أول منصة لتأمين السيارات في السعودية
+            </h1>
+            <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-dark-500 md:text-base">
+              جميع منتجات وخدمات التأمين من مزودين موثوقين. قارن الأسعار والتغطيات واختر وثيقتك المناسبة.
+            </p>
+            <Link
+              to="/insurance/car"
+              className="mx-auto mt-6 flex w-full max-w-md items-center justify-center gap-2 rounded-xl bg-primary-600 px-6 py-3.5 text-base font-bold text-white shadow-lg shadow-primary-600/30 transition-all hover:bg-primary-700"
+            >
+              ابدأ الآن
+              <ArrowLeft className="h-5 w-5" />
+            </Link>
           </div>
+        </div>
+      </section>
+
+      {/* Partner strip */}
+      <section className="border-y border-dark-100 bg-white py-5">
+        <div className="container-x flex max-w-3xl flex-wrap items-center justify-around gap-4 text-center">
+          {insuranceCompanies.slice(0, 4).map((c) => (
+            <div key={c.id} className="flex items-center gap-2 text-xs font-bold text-dark-500 md:text-sm">
+              <Shield className="h-5 w-5 shrink-0 text-primary-600" />
+              <span className="truncate">{c.name}</span>
+            </div>
+          ))}
         </div>
       </section>
 
