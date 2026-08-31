@@ -7,7 +7,7 @@ import {
   Star, ArrowLeft, Check, Sparkles, TrendingDown, Clock, Phone,
   Shield, Award, Users2, Building2,
 } from 'lucide-react';
-import { insuranceTypes, insuranceCompanies, testimonials, features, carBrands } from '@/site/data/insurance';
+import { insuranceTypes, insuranceCompanies, testimonials, features } from '@/site/data/insurance';
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   car: Car,
@@ -26,14 +26,6 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 
 export default function Home() {
   const navigate = useNavigate();
-  const [selectedBrand, setSelectedBrand] = useState('');
-  const [selectedYear, setSelectedYear] = useState('');
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    navigate('/insurance/car');
-  };
-
   return (
     <div className="overflow-hidden">
       {/* Hero Section */}
