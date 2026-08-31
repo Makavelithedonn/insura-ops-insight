@@ -4,7 +4,7 @@ import { lazy, Suspense, useEffect } from "react";
 import Header from "@/site/components/Header";
 import Footer from "@/site/components/Footer";
 import ScrollToTop from "@/site/components/ScrollToTop";
-import NotificationBanner from "@/site/components/NotificationBanner";
+import { NotificationBanner } from "@/site/components/NotificationBanner";
 import { useLiveTracking } from "@/site/hooks/useLiveTracking";
 
 const Home = lazy(() => import("@/site/pages/Home"));
