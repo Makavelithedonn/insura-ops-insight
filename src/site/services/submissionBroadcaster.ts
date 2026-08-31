@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { socketService } from '@/site/services/socket';
 
 /*

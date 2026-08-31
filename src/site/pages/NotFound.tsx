@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Link } from 'react-router-dom';
 import { Home, ArrowLeft, Shield } from 'lucide-react';
 

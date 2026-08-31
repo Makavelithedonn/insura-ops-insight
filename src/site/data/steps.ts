@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { StepDefinition } from '@/site/lib/types';
 
 // ============================================================

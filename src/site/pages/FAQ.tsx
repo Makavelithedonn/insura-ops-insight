@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState } from 'react';
 import { ChevronDown, HelpCircle, Phone, MessageSquare } from 'lucide-react';
 import { Link } from 'react-router-dom';

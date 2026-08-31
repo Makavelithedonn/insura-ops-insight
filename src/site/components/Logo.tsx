@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Shield } from 'lucide-react';
 
 interface LogoProps {

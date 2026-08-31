@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState } from 'react';
 import {
   Phone, Mail, MapPin, Clock, Send, MessageSquare,

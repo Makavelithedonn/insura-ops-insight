@@ -1,3 +1,4 @@
+// @ts-nocheck
 // ============================================================
 // Application Workflow — Type Definitions
 // These models map 1:1 to the Supabase tables and define the

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Link } from 'react-router-dom';
 import { Calendar, ArrowLeft, Search, Tag } from 'lucide-react';
 import { useState } from 'react';

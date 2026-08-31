@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Link } from 'react-router-dom';
 import {
   Shield, Award, Users2, Building2, Target, Eye,

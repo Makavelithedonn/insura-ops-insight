@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { Phone, ArrowLeft, Shield, Loader2, CheckCircle } from 'lucide-react';

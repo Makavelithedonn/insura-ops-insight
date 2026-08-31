@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useNavigate } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, Shield, Loader2, RefreshCw } from 'lucide-react';

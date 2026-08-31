@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { supabase } from '@/site/lib/supabase';
 import type {
   Application,

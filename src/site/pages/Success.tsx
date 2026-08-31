@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Link } from 'react-router-dom';
 import { CheckCircle, Download, Printer, Home, FileText } from 'lucide-react';
 

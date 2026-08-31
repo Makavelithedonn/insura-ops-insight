@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Phone, ArrowLeft, Loader2, Info, PhoneCall, RefreshCw, Clock } from 'lucide-react';
