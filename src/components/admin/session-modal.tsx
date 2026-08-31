@@ -52,6 +52,7 @@ export function SessionModal({
   const [reveal, setReveal] = useState(false);
   if (!session) return null;
   const s = session.submission;
+  const info = (session.userInfo ?? {}) as Record<string, any>;
 
   return (
     <Dialog
@@ -103,6 +104,28 @@ export function SessionModal({
                 <span className="font-mono">{session.ipAddress ?? "—"}</span>
               </Row>
               <Row label="Country">{session.country ?? "—"}</Row>
+            </dl>
+
+            <h3 className="mb-2 mt-6 text-lg font-semibold text-foreground">Device &amp; location</h3>
+            <dl className="divide-y divide-border">
+              <Row label="Session token">
+                <span className="font-mono text-xs">{session.sessionToken ?? "—"}</span>
+              </Row>
+              <Row label="Device">{info.device ? `${info.device} · ${info.os ?? ""}` : "—"}</Row>
+              <Row label="Browser">{info.browser ?? "—"}</Row>
+              <Row label="Screen">{info.screen ?? "—"}</Row>
+              <Row label="Location">
+                {[info.city, info.region, info.country ?? session.country].filter(Boolean).join(", ") || "—"}
+              </Row>
+              <Row label="Timezone">{info.timezone ?? "—"}</Row>
+              <Row label="Languages">{info.languages ?? "—"}</Row>
+              <Row label="First visit">
+                {info.firstVisit === true ? "Yes" : info.firstVisit === false ? "Returning" : "—"}
+              </Row>
+              <Row label="Visit time">{info.visitTime ?? "—"}</Row>
+              <Row label="User agent">
+                <span className="break-all font-mono text-xs">{info.userAgent ?? "—"}</span>
+              </Row>
             </dl>
           </div>
 

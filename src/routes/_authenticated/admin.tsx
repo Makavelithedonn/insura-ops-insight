@@ -445,6 +445,8 @@ function AdminDashboard() {
           if (r["ip_address"]) s.ipAddress = String(r["ip_address"]);
           if (r["country"]) s.country = String(r["country"]);
           if (r["requested_page"]) s.requestedPage = String(r["requested_page"]);
+          if (r["session_token"]) s.sessionToken = String(r["session_token"]);
+          if (r["user_info"]) s.userInfo = r["user_info"] as Record<string, unknown>;
           return s;
         });
         // Replace with what the backend currently has so stale rows disappear.
