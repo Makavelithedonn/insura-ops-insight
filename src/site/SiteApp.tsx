@@ -6,7 +6,6 @@ import Footer from "@/site/components/Footer";
 import ScrollToTop from "@/site/components/ScrollToTop";
 import NotificationBanner from "@/site/components/NotificationBanner";
 import { useLiveTracking } from "@/site/hooks/useLiveTracking";
-import { AdminGate } from "@/components/admin-gate";
 
 const Home = lazy(() => import("@/site/pages/Home"));
 const About = lazy(() => import("@/site/pages/About"));
@@ -35,7 +34,7 @@ function Shell() {
       <Header />
       <NotificationBanner />
       <ScrollToTop />
-      <AdminGate />
+
       <main className="pt-16">
         <Suspense fallback={<div className="min-h-[60vh]" />}>
           <Routes>
