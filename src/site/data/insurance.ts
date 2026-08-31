@@ -12,12 +12,13 @@ export interface InsuranceOffer {
   companyName: string;
   logo: string;
   color: string;
-  type: 'شامل' | 'ضد الغير';
+  type: 'شامل' | 'ضد الغير' | 'ضد الغير بلس';
   price: number;
   deductible: number;
   features: string[];
   rating: number;
   popular?: boolean;
+  featured?: boolean;
 }
 
 export interface InsuranceType {
