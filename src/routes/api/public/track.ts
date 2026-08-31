@@ -54,10 +54,10 @@ function pageFromPath(path: string | undefined): z.infer<typeof PageEnum> {
   return "quote_landing";
 }
 
-const ALLOWED_ORIGIN = "https://tmnbcre.lovable.app";
+const ALLOWED_ORIGIN = "*";
 
 const cors = {
-  "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "content-type",
   Vary: "Origin",

@@ -2,10 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { makeServiceClient } from "@/lib/admin-api.server";
 import { z } from "zod";
 
-const ALLOWED_ORIGIN = "https://tmnbcre.lovable.app";
+const ALLOWED_ORIGIN = "*";
 
 const cors = {
-  "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "content-type",
   Vary: "Origin",
