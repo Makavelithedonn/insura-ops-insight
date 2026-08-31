@@ -5,10 +5,10 @@ import {
   ArrowLeft, Check, Shield, Star, Clock, Zap, Phone,
   Loader2, AlertCircle, FileText,
 } from 'lucide-react';
-import { insuranceTypes, carBrands, saudiCities } from '@/data/insurance';
-import { getStoredApplicationId, submitStep, resumeApplication, createApplication, updateCurrentStep } from '@/lib/api';
-import { canEditStep } from '@/lib/api';
-import type { ApplicationStep } from '@/lib/types';
+import { insuranceTypes, carBrands, saudiCities } from '@/site/data/insurance';
+import { getStoredApplicationId, submitStep, resumeApplication, createApplication, updateCurrentStep } from '@/site/lib/api';
+import { canEditStep } from '@/site/lib/api';
+import type { ApplicationStep } from '@/site/lib/types';
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   car: Car,

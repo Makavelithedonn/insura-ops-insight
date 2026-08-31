@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/site/lib/supabase';
 import type {
   Application,
   ApplicationStep,
@@ -8,8 +8,8 @@ import type {
   AppNotification,
   ApplicationHistoryEvent,
   AdminComment,
-} from '@/lib/types';
-import { APPLICATION_STEPS, getStepByKey } from '@/data/steps';
+} from '@/site/lib/types';
+import { APPLICATION_STEPS, getStepByKey } from '@/site/data/steps';
 
 // ============================================================
 // Application API Layer

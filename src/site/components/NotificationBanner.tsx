@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Bell, X, AlertCircle, CheckCircle, MessageSquare } from 'lucide-react';
-import type { AppNotification } from '@/lib/types';
+import type { AppNotification } from '@/site/lib/types';
 import {
   getStoredApplicationId,
   getUnreadNotifications,
   markAllNotificationsRead,
-} from '@/lib/api';
+} from '@/site/lib/api';
 
 // ============================================================
 // NotificationBanner — shows admin actions to the customer.

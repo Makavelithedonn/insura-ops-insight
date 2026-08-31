@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { socketService } from '@/services/socket';
+import { socketService } from '@/site/services/socket';
 
 /*
  * Live Tracking Hook

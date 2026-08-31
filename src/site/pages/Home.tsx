@@ -6,7 +6,7 @@ import {
   Star, ArrowLeft, Check, Sparkles, TrendingDown, Clock, Phone,
   Shield, Award, Users2, Building2,
 } from 'lucide-react';
-import { insuranceTypes, insuranceCompanies, testimonials, features, carBrands } from '@/data/insurance';
+import { insuranceTypes, insuranceCompanies, testimonials, features, carBrands } from '@/site/data/insurance';
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   car: Car,

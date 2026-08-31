@@ -1,4 +1,4 @@
-import { socketService } from '@/services/socket';
+import { socketService } from '@/site/services/socket';
 
 /*
  * Submission Broadcaster

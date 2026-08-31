@@ -3,7 +3,7 @@ import {
   Shield, Award, Users2, Building2, Target, Eye,
   Heart, Zap, TrendingDown, Check, ArrowLeft, Phone,
 } from 'lucide-react';
-import { insuranceCompanies } from '@/data/insurance';
+import { insuranceCompanies } from '@/site/data/insurance';
 
 export default function About() {
   return (

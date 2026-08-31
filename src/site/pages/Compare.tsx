@@ -4,7 +4,7 @@ import {
   Check, Star, ArrowLeft, Shield, Clock, TrendingDown,
   Filter, Loader2, Award, Phone,
 } from 'lucide-react';
-import { carInsuranceOffers } from '@/data/insurance';
+import { carInsuranceOffers } from '@/site/data/insurance';
 
 export default function Compare() {
   const navigate = useNavigate();

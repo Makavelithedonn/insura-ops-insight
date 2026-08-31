@@ -3,7 +3,7 @@ import {
   Car, HeartPulse, Plane, Users, Stethoscope, Truck,
   ArrowLeft, Check, Shield,
 } from 'lucide-react';
-import { insuranceTypes } from '@/data/insurance';
+import { insuranceTypes } from '@/site/data/insurance';
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   car: Car,

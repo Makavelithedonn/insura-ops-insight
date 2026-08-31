@@ -11,7 +11,7 @@ import type {
   ReviewAction,
   AppNotification,
   StepStatus,
-} from '@/lib/types';
+} from '@/site/lib/types';
 import {
   getStoredApplicationId,
   resumeApplication,
@@ -19,8 +19,8 @@ import {
   getReviewActions,
   getUnreadNotifications,
   markAllNotificationsRead,
-} from '@/lib/api';
-import { APPLICATION_STEPS } from '@/data/steps';
+} from '@/site/lib/api';
+import { APPLICATION_STEPS } from '@/site/data/steps';
 
 // ============================================================
 // Application Status Page

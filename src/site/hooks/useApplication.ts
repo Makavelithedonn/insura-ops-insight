@@ -3,14 +3,14 @@ import type {
   ApplicationWithSteps,
   AppNotification,
   StepStatus,
-} from '@/lib/types';
+} from '@/site/lib/types';
 import {
   createApplication,
   resumeApplication,
   getStoredApplicationId,
   getUnreadNotifications,
   markAllNotificationsRead,
-} from '@/lib/api';
+} from '@/site/lib/api';
 
 // ============================================================
 // useApplication — central hook for the application workflow

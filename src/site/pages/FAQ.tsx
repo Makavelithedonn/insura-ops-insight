@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ChevronDown, HelpCircle, Phone, MessageSquare } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { faqs } from '@/data/insurance';
+import { faqs } from '@/site/data/insurance';
 
 export default function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);

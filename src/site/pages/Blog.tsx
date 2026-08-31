@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Calendar, ArrowLeft, Search, Tag } from 'lucide-react';
 import { useState } from 'react';
-import { blogPosts } from '@/data/insurance';
+import { blogPosts } from '@/site/data/insurance';
 
 export default function Blog() {
   const [search, setSearch] = useState('');

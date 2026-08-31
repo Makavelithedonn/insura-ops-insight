@@ -4,7 +4,7 @@ import {
   CreditCard, Lock, Check, ArrowLeft, Loader2,
   Shield, Calendar, User, Receipt,
 } from 'lucide-react';
-import { carInsuranceOffers } from '@/data/insurance';
+import { carInsuranceOffers } from '@/site/data/insurance';
 
 export default function Payment() {
   const navigate = useNavigate();

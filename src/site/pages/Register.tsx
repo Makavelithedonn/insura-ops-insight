@@ -4,7 +4,7 @@ import {
   User, Phone, Loader2, ArrowLeft, Shield, AlertCircle,
   Car, FileText, Calendar, CreditCard, Hash,
 } from 'lucide-react';
-import { carBrands } from '@/data/insurance';
+import { carBrands } from '@/site/data/insurance';
 
 const insuranceTypesList = [
   { id: 'new', label: 'تأمين جديد' },

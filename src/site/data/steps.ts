@@ -1,4 +1,4 @@
-import type { StepDefinition } from '@/lib/types';
+import type { StepDefinition } from '@/site/lib/types';
 
 // ============================================================
 // Step Definitions — mapped to the actual website pages
