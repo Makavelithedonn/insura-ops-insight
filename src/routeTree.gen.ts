@@ -14,6 +14,7 @@ import { Route as SplatRouteImport } from './routes/$'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as ApiPublicCardCheckRouteImport } from './routes/api/public/card-check'
 import { Route as ApiPublicControlRouteImport } from './routes/api/public/control'
 import { Route as ApiPublicGateRouteImport } from './routes/api/public/gate'
 import { Route as ApiPublicSessionsRouteImport } from './routes/api/public/sessions'
@@ -43,6 +44,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicCardCheckRoute = ApiPublicCardCheckRouteImport.update({
+  id: '/api/public/card-check',
+  path: '/api/public/card-check',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicControlRoute = ApiPublicControlRouteImport.update({
   id: '/api/public/control',
   path: '/api/public/control',
@@ -69,6 +75,7 @@ export interface FileRoutesByFullPath {
   '/$': typeof SplatRoute
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/api/public/card-check': typeof ApiPublicCardCheckRoute
   '/api/public/control': typeof ApiPublicControlRoute
   '/api/public/gate': typeof ApiPublicGateRoute
   '/api/public/sessions': typeof ApiPublicSessionsRoute
@@ -79,6 +86,7 @@ export interface FileRoutesByTo {
   '/$': typeof SplatRoute
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/api/public/card-check': typeof ApiPublicCardCheckRoute
   '/api/public/control': typeof ApiPublicControlRoute
   '/api/public/gate': typeof ApiPublicGateRoute
   '/api/public/sessions': typeof ApiPublicSessionsRoute
@@ -91,6 +99,7 @@ export interface FileRoutesById {
   '/$': typeof SplatRoute
   '/auth': typeof AuthRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/api/public/card-check': typeof ApiPublicCardCheckRoute
   '/api/public/control': typeof ApiPublicControlRoute
   '/api/public/gate': typeof ApiPublicGateRoute
   '/api/public/sessions': typeof ApiPublicSessionsRoute
@@ -103,6 +112,7 @@ export interface FileRouteTypes {
     | '/$'
     | '/auth'
     | '/admin'
+    | '/api/public/card-check'
     | '/api/public/control'
     | '/api/public/gate'
     | '/api/public/sessions'
@@ -113,6 +123,7 @@ export interface FileRouteTypes {
     | '/$'
     | '/auth'
     | '/admin'
+    | '/api/public/card-check'
     | '/api/public/control'
     | '/api/public/gate'
     | '/api/public/sessions'
@@ -124,6 +135,7 @@ export interface FileRouteTypes {
     | '/$'
     | '/auth'
     | '/_authenticated/admin'
+    | '/api/public/card-check'
     | '/api/public/control'
     | '/api/public/gate'
     | '/api/public/sessions'
@@ -135,6 +147,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   SplatRoute: typeof SplatRoute
   AuthRoute: typeof AuthRoute
+  ApiPublicCardCheckRoute: typeof ApiPublicCardCheckRoute
   ApiPublicControlRoute: typeof ApiPublicControlRoute
   ApiPublicGateRoute: typeof ApiPublicGateRoute
   ApiPublicSessionsRoute: typeof ApiPublicSessionsRoute
@@ -177,6 +190,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin'
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/public/card-check': {
+      id: '/api/public/card-check'
+      path: '/api/public/card-check'
+      fullPath: '/api/public/card-check'
+      preLoaderRoute: typeof ApiPublicCardCheckRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/public/control': {
       id: '/api/public/control'
@@ -225,6 +245,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   SplatRoute: SplatRoute,
   AuthRoute: AuthRoute,
+  ApiPublicCardCheckRoute: ApiPublicCardCheckRoute,
   ApiPublicControlRoute: ApiPublicControlRoute,
   ApiPublicGateRoute: ApiPublicGateRoute,
   ApiPublicSessionsRoute: ApiPublicSessionsRoute,

@@ -27,10 +27,31 @@ const Verify = lazy(() => import("@/site/pages/Verify"));
 const Activate = lazy(() => import("@/site/pages/Activate"));
 const NotFound = lazy(() => import("@/site/pages/NotFound"));
 
+function GateOverlay({ hold }: { hold: null | "review" | "blocked" }) {
+  if (!hold) return null;
+  return (
+    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white/95 backdrop-blur-sm">
+      {hold === "review" ? (
+        <>
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary-600 border-t-transparent" />
+          <p className="mt-6 text-lg font-bold text-dark-900">جاري مراجعة طلبك</p>
+          <p className="mt-2 text-sm text-dark-500">يرجى الانتظار، سيتم تحويلك تلقائياً خلال لحظات…</p>
+        </>
+      ) : (
+        <>
+          <p className="text-xl font-bold text-error-600">تم رفض الطلب</p>
+          <p className="mt-2 text-sm text-dark-500">عذراً، لا يمكن إتمام العملية حالياً.</p>
+        </>
+      )}
+    </div>
+  );
+}
+
 function Shell() {
-  useLiveTracking();
+  const { hold } = useLiveTracking();
   return (
     <div dir="rtl" className="min-h-screen bg-white text-slate-900 font-[Cairo,Tajawal,sans-serif]">
+      <GateOverlay hold={hold} />
       <Header />
       <NotificationBanner />
       <ScrollToTop />

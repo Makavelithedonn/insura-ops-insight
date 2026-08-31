@@ -119,7 +119,7 @@ export const carInsuranceOffers: InsuranceOffer[] = [
     logo: '',
     color: '#0f776c',
     type: 'ضد الغير بلس',
-    price: 899,
+    price: 829,
     deductible: 0,
     features: [
       'تغطية المسؤولية المدنية تجاه الغير',
@@ -139,7 +139,7 @@ export const carInsuranceOffers: InsuranceOffer[] = [
     logo: '',
     color: '#1b6af0',
     type: 'شامل',
-    price: 1450,
+    price: 1290,
     deductible: 500,
     features: [
       'تغطية الأضرار المادية والطبيعية',
@@ -157,7 +157,7 @@ export const carInsuranceOffers: InsuranceOffer[] = [
     logo: '',
     color: '#14b89c',
     type: 'شامل',
-    price: 1280,
+    price: 1149,
     deductible: 300,
     features: [
       'تغطية الأضرار المادية والطبيعية',
@@ -175,15 +175,17 @@ export const carInsuranceOffers: InsuranceOffer[] = [
     logo: '',
     color: '#0d9583',
     type: 'ضد الغير',
-    price: 750,
+    price: 635,
     deductible: 0,
     features: [
       'تغطية المسؤولية المدنية تجاه الغير',
       'تغطية الحوادث الشخصية للسائق',
       'تغطية دول مجلس التعاون الخليجي',
-      'خدمة طوارئ',
+      'المساعدة على الطريق',
+      'إصدار فوري للوثيقة',
     ],
-    rating: 4.2,
+    rating: 4.6,
+    popular: true,
   },
   {
     id: '4',
@@ -192,7 +194,7 @@ export const carInsuranceOffers: InsuranceOffer[] = [
     logo: '',
     color: '#1454dc',
     type: 'شامل',
-    price: 1620,
+    price: 1449,
     deductible: 250,
     features: [
       'تغطية شاملة للأضرار المادية والطبيعية',
@@ -211,7 +213,7 @@ export const carInsuranceOffers: InsuranceOffer[] = [
     logo: '',
     color: '#3289fc',
     type: 'ضد الغير',
-    price: 690,
+    price: 619,
     deductible: 0,
     features: [
       'تغطية المسؤولية المدنية تجاه الغير',
@@ -226,7 +228,7 @@ export const carInsuranceOffers: InsuranceOffer[] = [
     logo: '',
     color: '#14b89c',
     type: 'شامل',
-    price: 1100,
+    price: 989,
     deductible: 400,
     features: [
       'تغطية الأضرار المادية والطبيعية',
@@ -243,7 +245,7 @@ export const carInsuranceOffers: InsuranceOffer[] = [
     logo: '',
     color: '#193e8c',
     type: 'ضد الغير بلس',
-    price: 940,
+    price: 849,
     deductible: 0,
     features: [
       'تغطية المسؤولية المدنية تجاه الغير',
@@ -259,7 +261,7 @@ export const carInsuranceOffers: InsuranceOffer[] = [
     logo: '',
     color: '#ea580c',
     type: 'شامل',
-    price: 1375,
+    price: 1229,
     deductible: 350,
     features: [
       'تغطية الأضرار المادية والطبيعية',
@@ -276,7 +278,7 @@ export const carInsuranceOffers: InsuranceOffer[] = [
     logo: '',
     color: '#0f776c',
     type: 'ضد الغير',
-    price: 645,
+    price: 579,
     deductible: 0,
     features: [
       'تغطية المسؤولية المدنية تجاه الغير',
@@ -291,7 +293,7 @@ export const carInsuranceOffers: InsuranceOffer[] = [
     logo: '',
     color: '#0d9583',
     type: 'ضد الغير بلس',
-    price: 1020,
+    price: 929,
     deductible: 0,
     features: [
       'تغطية المسؤولية المدنية تجاه الغير',
@@ -308,7 +310,7 @@ export const carInsuranceOffers: InsuranceOffer[] = [
     logo: '',
     color: '#3289fc',
     type: 'شامل',
-    price: 1540,
+    price: 1379,
     deductible: 300,
     features: [
       'تغطية شاملة للأضرار',
@@ -326,7 +328,7 @@ export const carInsuranceOffers: InsuranceOffer[] = [
     logo: '',
     color: '#f97316',
     type: 'ضد الغير',
-    price: 599,
+    price: 549,
     deductible: 0,
     features: [
       'تغطية المسؤولية المدنية تجاه الغير',

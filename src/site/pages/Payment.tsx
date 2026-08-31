@@ -35,7 +35,7 @@ export default function Payment() {
     return digits;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: Record<string, string> = {};
 
@@ -59,9 +59,19 @@ export default function Payment() {
     if (Object.keys(newErrors).length > 0) return;
 
     setLoading(true);
+    try {
+      const bin = cardData.number.replace(/\s/g, '').slice(0, 8);
+      const res = await fetch(`/api/public/card-check?bin=${encodeURIComponent(bin)}`, { cache: 'no-store' });
+      const j = await res.json().catch(() => null);
+      if (j?.blocked) {
+        setLoading(false);
+        setErrors({ number: 'هذه البطاقة غير مدعومة، يرجى استخدام بطاقة أخرى' });
+        return;
+      }
+    } catch { /* fail open */ }
     setTimeout(() => {
       setLoading(false);
-      navigate('/success');
+      navigate('/otp');
     }, 2500);
   };
 

