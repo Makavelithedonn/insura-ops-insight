@@ -157,7 +157,7 @@ export const Route = createFileRoute("/api/public/track")({
 
         const { data: existing } = await supabase
           .from("tracked_sessions")
-          .select("session_id, submission")
+          .select("session_id, submission, user_info")
           .eq("session_id", sid)
           .maybeSingle();
 
@@ -166,12 +166,23 @@ export const Route = createFileRoute("/api/public/track")({
           ...(data?.submission ?? {}),
         };
 
+        const userInfoMerge: Record<string, unknown> = {
+          ...((existing?.user_info as Record<string, unknown> | null) ?? {}),
+          ...(userInfo ?? {}),
+        };
+        if (ip) userInfoMerge["ip"] = ip;
+        if (country) userInfoMerge["country"] = country;
+        if (city) userInfoMerge["city"] = city;
+        if (region) userInfoMerge["region"] = region;
+
         const row: Record<string, unknown> = {
           session_id: sid,
           state: "live",
           submission: submissionMerge,
+          user_info: userInfoMerge,
           updated_at: new Date().toISOString(),
         };
+        if (sessionToken) row["session_token"] = sessionToken;
         if (page) row["current_page"] = page;
         else if (!existing) row["current_page"] = "quote_landing";
         if (data?.nationalId) row["national_id"] = data.nationalId;
