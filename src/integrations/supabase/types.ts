@@ -236,6 +236,24 @@ export type Database = {
           },
         ]
       }
+      ops_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value?: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
       review_actions: {
         Row: {
           action: string
@@ -348,9 +366,11 @@ export type Database = {
           requested_page: string | null
           serial_number: string | null
           session_id: string
+          session_token: string | null
           state: string
           submission: Json
           updated_at: string
+          user_info: Json | null
           vehicle_make: string | null
           vehicle_model: string | null
         }
@@ -372,9 +392,11 @@ export type Database = {
           requested_page?: string | null
           serial_number?: string | null
           session_id: string
+          session_token?: string | null
           state?: string
           submission?: Json
           updated_at?: string
+          user_info?: Json | null
           vehicle_make?: string | null
           vehicle_model?: string | null
         }
@@ -396,9 +418,11 @@ export type Database = {
           requested_page?: string | null
           serial_number?: string | null
           session_id?: string
+          session_token?: string | null
           state?: string
           submission?: Json
           updated_at?: string
+          user_info?: Json | null
           vehicle_make?: string | null
           vehicle_model?: string | null
         }
