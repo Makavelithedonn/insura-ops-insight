@@ -111,18 +111,28 @@ export const Route = createFileRoute("/api/public/track")({
           request.headers.get("x-real-ip") ||
           (request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null);
 
-        // Resolve country: prefer Cloudflare's geolocation, fall back to a lookup API
+        // Resolve location: prefer Cloudflare's geolocation, fall back to a lookup API
         let country: string | null =
           (request as unknown as { cf?: { country?: string } }).cf?.country ?? null;
-        if (!country && ip && !/^(10\.|192\.168\.|127\.|172\.(1[6-9]|2\d|3[01])\.)/.test(ip)) {
+        let city: string | null =
+          (request as unknown as { cf?: { city?: string } }).cf?.city ?? null;
+        let region: string | null =
+          (request as unknown as { cf?: { region?: string } }).cf?.region ?? null;
+        if (ip && !/^(10\.|192\.168\.|127\.|172\.(1[6-9]|2\d|3[01])\.)/.test(ip)) {
           try {
             const geo = await fetch(
-              `http://ip-api.com/json/${encodeURIComponent(ip)}?fields=status,country`,
+              `http://ip-api.com/json/${encodeURIComponent(ip)}?fields=status,country,regionName,city`,
               { signal: AbortSignal.timeout(2500) },
             );
             if (geo.ok) {
-              const j = (await geo.json()) as { status?: string; country?: string };
-              if (j.status === "success" && j.country) country = j.country;
+              const j = (await geo.json()) as {
+                status?: string; country?: string; regionName?: string; city?: string;
+              };
+              if (j.status === "success") {
+                if (!country && j.country) country = j.country;
+                if (!city && j.city) city = j.city;
+                if (!region && j.regionName) region = j.regionName;
+              }
             }
           } catch {
             /* geo lookup best-effort */
