@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 
 async function authHeaders(): Promise<Record<string, string>> {
@@ -518,6 +518,12 @@ function AdminDashboard() {
           <Button variant="outline" size="sm" onClick={refresh} disabled={refreshing}>
             <RefreshCw className={refreshing ? "size-4 animate-spin" : "size-4"} />
             Refresh
+          </Button>
+          <Button asChild variant="outline" size="sm" title="Connection health">
+            <Link to="/admin-health">
+              <Plug className="size-4" />
+              Health
+            </Link>
           </Button>
           <Button
             variant="outline"

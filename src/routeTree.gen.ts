@@ -13,8 +13,10 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedAdminHealthRouteImport } from './routes/_authenticated/admin-health'
 import { Route as ApiPublicControlRouteImport } from './routes/api/public/control'
 import { Route as ApiPublicGateRouteImport } from './routes/api/public/gate'
+import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as ApiPublicSessionsRouteImport } from './routes/api/public/sessions'
 import { Route as ApiPublicTrackRouteImport } from './routes/api/public/track'
 
@@ -37,6 +39,12 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminHealthRoute =
+  AuthenticatedAdminHealthRouteImport.update({
+    id: '/admin-health',
+    path: '/admin-health',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPublicControlRoute = ApiPublicControlRouteImport.update({
   id: '/api/public/control',
   path: '/api/public/control',
@@ -45,6 +53,11 @@ const ApiPublicControlRoute = ApiPublicControlRouteImport.update({
 const ApiPublicGateRoute = ApiPublicGateRouteImport.update({
   id: '/api/public/gate',
   path: '/api/public/gate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
+  id: '/api/public/health',
+  path: '/api/public/health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicSessionsRoute = ApiPublicSessionsRouteImport.update({
@@ -62,8 +75,10 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/admin-health': typeof AuthenticatedAdminHealthRoute
   '/api/public/control': typeof ApiPublicControlRoute
   '/api/public/gate': typeof ApiPublicGateRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/sessions': typeof ApiPublicSessionsRoute
   '/api/public/track': typeof ApiPublicTrackRoute
 }
@@ -71,8 +86,10 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/admin-health': typeof AuthenticatedAdminHealthRoute
   '/api/public/control': typeof ApiPublicControlRoute
   '/api/public/gate': typeof ApiPublicGateRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/sessions': typeof ApiPublicSessionsRoute
   '/api/public/track': typeof ApiPublicTrackRoute
 }
@@ -82,8 +99,10 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/admin-health': typeof AuthenticatedAdminHealthRoute
   '/api/public/control': typeof ApiPublicControlRoute
   '/api/public/gate': typeof ApiPublicGateRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/sessions': typeof ApiPublicSessionsRoute
   '/api/public/track': typeof ApiPublicTrackRoute
 }
@@ -93,8 +112,10 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/admin'
+    | '/admin-health'
     | '/api/public/control'
     | '/api/public/gate'
+    | '/api/public/health'
     | '/api/public/sessions'
     | '/api/public/track'
   fileRoutesByTo: FileRoutesByTo
@@ -102,8 +123,10 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/admin'
+    | '/admin-health'
     | '/api/public/control'
     | '/api/public/gate'
+    | '/api/public/health'
     | '/api/public/sessions'
     | '/api/public/track'
   id:
@@ -112,8 +135,10 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/admin'
+    | '/_authenticated/admin-health'
     | '/api/public/control'
     | '/api/public/gate'
+    | '/api/public/health'
     | '/api/public/sessions'
     | '/api/public/track'
   fileRoutesById: FileRoutesById
@@ -124,6 +149,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ApiPublicControlRoute: typeof ApiPublicControlRoute
   ApiPublicGateRoute: typeof ApiPublicGateRoute
+  ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicSessionsRoute: typeof ApiPublicSessionsRoute
   ApiPublicTrackRoute: typeof ApiPublicTrackRoute
 }
@@ -158,6 +184,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin-health': {
+      id: '/_authenticated/admin-health'
+      path: '/admin-health'
+      fullPath: '/admin-health'
+      preLoaderRoute: typeof AuthenticatedAdminHealthRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/control': {
       id: '/api/public/control'
       path: '/api/public/control'
@@ -170,6 +203,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/gate'
       fullPath: '/api/public/gate'
       preLoaderRoute: typeof ApiPublicGateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/health': {
+      id: '/api/public/health'
+      path: '/api/public/health'
+      fullPath: '/api/public/health'
+      preLoaderRoute: typeof ApiPublicHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/sessions': {
@@ -191,10 +231,12 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedAdminHealthRoute: typeof AuthenticatedAdminHealthRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedAdminHealthRoute: AuthenticatedAdminHealthRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -206,6 +248,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ApiPublicControlRoute: ApiPublicControlRoute,
   ApiPublicGateRoute: ApiPublicGateRoute,
+  ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicSessionsRoute: ApiPublicSessionsRoute,
   ApiPublicTrackRoute: ApiPublicTrackRoute,
 }
