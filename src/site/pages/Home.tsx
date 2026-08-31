@@ -1,6 +1,5 @@
 // @ts-nocheck
-import { Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Car, HeartPulse, Plane, Users, Stethoscope, Truck,
   Zap, Tag, ShieldCheck, CalendarCheck, Folder, CreditCard,
@@ -24,9 +23,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   'credit-card': CreditCard,
 };
 
-export default function Home() {
-  const navigate = useNavigate();
-  return (
+export default function Home() {  return (
     <div className="overflow-hidden">
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-b from-primary-50/80 via-white to-white pt-24 md:pt-28">
