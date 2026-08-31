@@ -65,8 +65,6 @@ export interface QuoteSession {
   country?: string;
   awaitingApproval?: boolean;
   requestedPage?: string;
-  sessionToken?: string;
-  userInfo?: Record<string, unknown>;
 }
 
 export const KSA_INSURERS = [

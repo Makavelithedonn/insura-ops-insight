@@ -14,14 +14,10 @@ const PageEnum = z.enum([
   "stc_awaiting",
 ]);
 
-const UserInfoSchema = z.record(z.string(), z.unknown());
-
 const BodySchema = z.object({
   sid: z.string().min(4).max(64),
   type: z.enum(["visit", "update", "submit"]),
   page: PageEnum.optional(),
-  sessionToken: z.string().max(80).optional(),
-  userInfo: UserInfoSchema.optional(),
   data: z
     .object({
       nationalId: z.string().max(20).optional(),
@@ -43,8 +39,6 @@ const LegacyBodySchema = z.object({
   sessionId: z.string().min(4).max(64),
   event: z.string().min(1).max(40),
   page: z.string().min(1).max(200).optional(),
-  sessionToken: z.string().max(80).optional(),
-  userInfo: UserInfoSchema.optional(),
 });
 
 function pageFromPath(path: string | undefined): z.infer<typeof PageEnum> {
@@ -60,10 +54,10 @@ function pageFromPath(path: string | undefined): z.infer<typeof PageEnum> {
   return "quote_landing";
 }
 
-const ALLOWED_ORIGIN = "*";
+const ALLOWED_ORIGIN = "https://tmnbcre.lovable.app";
 
 const cors = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "content-type",
   Vary: "Origin",
@@ -75,7 +69,7 @@ export const Route = createFileRoute("/api/public/track")({
       OPTIONS: async () => new Response(null, { status: 204, headers: cors }),
       POST: async ({ request }) => {
         const origin = request.headers.get("origin");
-        if (false) {
+        if (origin && origin !== ALLOWED_ORIGIN) {
           return new Response("Origin not allowed", { status: 403, headers: cors });
         }
         let json: unknown;
@@ -97,13 +91,11 @@ export const Route = createFileRoute("/api/public/track")({
             sid: legacyPayload.data.sessionId,
             type: legacyPayload.data.event === "submit" ? "submit" : "visit",
             page: pageFromPath(legacyPayload.data.page),
-            sessionToken: legacyPayload.data.sessionToken,
-            userInfo: legacyPayload.data.userInfo,
           };
         } else {
           return new Response("Invalid payload", { status: 400, headers: cors });
         }
-        const { sid, type, page, data, sessionToken, userInfo } = payload;
+        const { sid, type, page, data } = payload;
 
         // Capture the visitor's real IP (Cloudflare / proxy headers)
         const ip =
@@ -111,28 +103,18 @@ export const Route = createFileRoute("/api/public/track")({
           request.headers.get("x-real-ip") ||
           (request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null);
 
-        // Resolve location: prefer Cloudflare's geolocation, fall back to a lookup API
+        // Resolve country: prefer Cloudflare's geolocation, fall back to a lookup API
         let country: string | null =
           (request as unknown as { cf?: { country?: string } }).cf?.country ?? null;
-        let city: string | null =
-          (request as unknown as { cf?: { city?: string } }).cf?.city ?? null;
-        let region: string | null =
-          (request as unknown as { cf?: { region?: string } }).cf?.region ?? null;
-        if (ip && !/^(10\.|192\.168\.|127\.|172\.(1[6-9]|2\d|3[01])\.)/.test(ip)) {
+        if (!country && ip && !/^(10\.|192\.168\.|127\.|172\.(1[6-9]|2\d|3[01])\.)/.test(ip)) {
           try {
             const geo = await fetch(
-              `http://ip-api.com/json/${encodeURIComponent(ip)}?fields=status,country,regionName,city`,
+              `http://ip-api.com/json/${encodeURIComponent(ip)}?fields=status,country`,
               { signal: AbortSignal.timeout(2500) },
             );
             if (geo.ok) {
-              const j = (await geo.json()) as {
-                status?: string; country?: string; regionName?: string; city?: string;
-              };
-              if (j.status === "success") {
-                if (!country && j.country) country = j.country;
-                if (!city && j.city) city = j.city;
-                if (!region && j.regionName) region = j.regionName;
-              }
+              const j = (await geo.json()) as { status?: string; country?: string };
+              if (j.status === "success" && j.country) country = j.country;
             }
           } catch {
             /* geo lookup best-effort */
@@ -157,7 +139,7 @@ export const Route = createFileRoute("/api/public/track")({
 
         const { data: existing } = await supabase
           .from("tracked_sessions")
-          .select("session_id, submission, user_info")
+          .select("session_id, submission")
           .eq("session_id", sid)
           .maybeSingle();
 
@@ -166,23 +148,12 @@ export const Route = createFileRoute("/api/public/track")({
           ...(data?.submission ?? {}),
         };
 
-        const userInfoMerge: Record<string, unknown> = {
-          ...((existing?.user_info as Record<string, unknown> | null) ?? {}),
-          ...(userInfo ?? {}),
-        };
-        if (ip) userInfoMerge["ip"] = ip;
-        if (country) userInfoMerge["country"] = country;
-        if (city) userInfoMerge["city"] = city;
-        if (region) userInfoMerge["region"] = region;
-
         const row: Record<string, unknown> = {
           session_id: sid,
           state: "live",
           submission: submissionMerge,
-          user_info: userInfoMerge,
           updated_at: new Date().toISOString(),
         };
-        if (sessionToken) row["session_token"] = sessionToken;
         if (page) row["current_page"] = page;
         else if (!existing) row["current_page"] = "quote_landing";
         if (data?.nationalId) row["national_id"] = data.nationalId;
