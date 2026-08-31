@@ -38,7 +38,7 @@ class SocketService {
     void fetch("/api/public/track", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ sid: this.state.sessionId, type: "visit", page: route }),
+      body: JSON.stringify({ sessionId: this.state.sessionId, event: "visit", page: route }),
       keepalive: true,
     }).catch(() => {});
   }
