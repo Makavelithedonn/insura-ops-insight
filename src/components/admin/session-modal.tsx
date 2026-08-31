@@ -52,7 +52,8 @@ export function SessionModal({
   const [reveal, setReveal] = useState(false);
   if (!session) return null;
   const s = session.submission;
-  const info = (session.userInfo ?? {}) as Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const info: any = session.userInfo ?? {};
 
   return (
     <Dialog
