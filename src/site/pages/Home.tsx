@@ -112,32 +112,48 @@ export default function Home() {
           <h2 className="mt-2 text-2xl font-extrabold text-dark-900 md:text-3xl">تغطية تناسب احتياجك</h2>
         </div>
         <div className="mx-auto grid max-w-5xl grid-cols-1 gap-5 md:grid-cols-3">
-          {PLANS.map((p) => (
-            <div
-              key={p.type}
-              className="rounded-3xl border-2 border-primary-100 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:border-primary-300 hover:shadow-xl"
-            >
-              <div className="inline-flex rounded-full bg-primary-50 px-3 py-1 text-xs font-bold text-primary-700">
-                {p.badge}
-              </div>
-              <h3 className="mt-3 text-xl font-extrabold text-dark-900">{p.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-dark-500">{p.desc}</p>
-              <Link
-                to={`/insurance/car?type=${encodeURIComponent(p.type)}`}
-                className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-primary-600 px-4 py-3 text-sm font-bold text-white transition-all hover:bg-primary-700"
+          {PLANS.map((p, i) => {
+            const highlighted = i === 0;
+            return (
+              <div
+                key={p.type}
+                className={`overflow-hidden rounded-3xl border-2 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl ${
+                  highlighted ? 'border-primary-600' : 'border-primary-100 hover:border-primary-300'
+                }`}
               >
-                ابدأ الآن
-              </Link>
-              <ul className="mt-5 space-y-2.5 text-sm">
-                {p.items.map((it) => (
-                  <li key={it} className="flex items-start gap-2 text-dark-700">
-                    <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary-600" />
-                    <span>{it}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+                <div className={`px-6 pt-6 pb-5 text-center ${highlighted ? 'bg-primary-600 text-white' : 'bg-white'}`}>
+                  <div className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold ${
+                    highlighted ? 'bg-white/15 text-white' : 'bg-primary-50 text-primary-700'
+                  }`}>
+                    {highlighted && <Sparkles className="h-3.5 w-3.5" />}
+                    {p.badge}
+                  </div>
+                  <h3 className={`mt-3 text-xl font-extrabold ${highlighted ? 'text-white' : 'text-dark-900'}`}>{p.title}</h3>
+                  <p className={`mt-2 text-sm leading-relaxed ${highlighted ? 'text-white/85' : 'text-dark-500'}`}>{p.desc}</p>
+                </div>
+                <div className="bg-white p-6 pt-5">
+                  <Link
+                    to={`/insurance/car?type=${encodeURIComponent(p.type)}`}
+                    className={`flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition-all ${
+                      highlighted
+                        ? 'bg-primary-600 text-white hover:bg-primary-700'
+                        : 'border-2 border-primary-600 text-primary-700 hover:bg-primary-50'
+                    }`}
+                  >
+                    ابدأ الآن
+                  </Link>
+                  <ul className="mt-5 space-y-2.5 text-sm">
+                    {p.items.map((it) => (
+                      <li key={it} className="flex items-start gap-2 text-dark-700">
+                        <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary-600" />
+                        <span>{it}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </section>
 
