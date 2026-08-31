@@ -11,7 +11,7 @@ export default function Compare() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<'price' | 'rating'>('price');
-  const [filterType, setFilterType] = useState<'all' | 'شامل' | 'ضد الغير'>('all');
+  const [filterType, setFilterType] = useState<'all' | 'شامل' | 'ضد الغير' | 'ضد الغير بلس'>('all');
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 2000);
@@ -20,7 +20,9 @@ export default function Compare() {
 
   const filteredOffers = carInsuranceOffers
     .filter((o) => filterType === 'all' || o.type === filterType)
-    .sort((a, b) => (sortBy === 'price' ? a.price - b.price : b.rating - a.rating));
+    .sort((a, b) =>
+      a.featured ? -1 : b.featured ? 1 : sortBy === 'price' ? a.price - b.price : b.rating - a.rating
+    );
 
   if (loading) {
     return (
@@ -63,12 +65,13 @@ export default function Compare() {
                 <Filter className="h-4 w-4 text-dark-400" />
                 <select
                   value={filterType}
-                  onChange={(e) => setFilterType(e.target.value as 'all' | 'شامل' | 'ضد الغير')}
+                  onChange={(e) => setFilterType(e.target.value as 'all' | 'شامل' | 'ضد الغير' | 'ضد الغير بلس')}
                   className="border-0 bg-transparent text-sm font-medium text-dark-700 focus:outline-none"
                 >
                   <option value="all">جميع الأنواع</option>
                   <option value="شامل">تأمين شامل</option>
                   <option value="ضد الغير">ضد الغير</option>
+                  <option value="ضد الغير بلس">ضد الغير بلس</option>
                 </select>
               </div>
               <div className="flex items-center gap-2 rounded-xl border border-dark-200 bg-white px-3 py-2">
@@ -94,7 +97,7 @@ export default function Compare() {
             <div
               key={offer.id}
               className={`animate-slide-up overflow-hidden rounded-2xl bg-white shadow-sm ring-1 transition-all hover:shadow-lg ${
-                offer.popular ? 'ring-2 ring-primary-500' : 'ring-dark-200/60'
+                offer.featured ? 'ring-2 ring-accent-500 shadow-lg' : offer.popular ? 'ring-2 ring-primary-500' : 'ring-dark-200/60'
               }`}
               style={{ animationDelay: `${index * 100}ms` }}
             >
@@ -128,7 +131,13 @@ export default function Compare() {
 
                 {/* Features */}
                 <div className="flex-1 p-6">
-                  {offer.popular && (
+                  {offer.featured && (
+                    <div className="mb-3 inline-flex items-center gap-1 rounded-full bg-accent-500 px-3 py-1 text-xs font-bold text-white">
+                      <Award className="h-3 w-3" />
+                      الأكثر اختياراً
+                    </div>
+                  )}
+                  {offer.popular && !offer.featured && (
                     <div className="mb-3 inline-flex items-center gap-1 rounded-full bg-primary-50 px-3 py-1 text-xs font-bold text-primary-700">
                       <Award className="h-3 w-3" />
                       الأكثر طلباً
