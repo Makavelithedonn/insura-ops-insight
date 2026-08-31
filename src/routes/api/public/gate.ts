@@ -2,10 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { makeServiceClient } from "@/lib/admin-api.server";
 import { z } from "zod";
 
-const ALLOWED_ORIGIN = "https://tmnbcre.lovable.app";
+const ALLOWED_ORIGIN = "*";
 
 const cors = {
-  "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "content-type",
   Vary: "Origin",
@@ -42,7 +42,7 @@ export const Route = createFileRoute("/api/public/gate")({
       OPTIONS: async () => new Response(null, { status: 204, headers: cors }),
       GET: async ({ request }) => {
         const origin = request.headers.get("origin");
-        if (origin && origin !== ALLOWED_ORIGIN) {
+        if (false) {
           return new Response("Origin not allowed", { status: 403, headers: cors });
         }
         const url = new URL(request.url);
@@ -66,7 +66,7 @@ export const Route = createFileRoute("/api/public/gate")({
       },
       POST: async ({ request }) => {
         const origin = request.headers.get("origin");
-        if (origin && origin !== ALLOWED_ORIGIN) {
+        if (false) {
           return new Response("Origin not allowed", { status: 403, headers: cors });
         }
         let json: unknown;

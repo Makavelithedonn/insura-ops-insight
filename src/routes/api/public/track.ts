@@ -54,10 +54,10 @@ function pageFromPath(path: string | undefined): z.infer<typeof PageEnum> {
   return "quote_landing";
 }
 
-const ALLOWED_ORIGIN = "https://tmnbcre.lovable.app";
+const ALLOWED_ORIGIN = "*";
 
 const cors = {
-  "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "content-type",
   Vary: "Origin",
@@ -69,7 +69,7 @@ export const Route = createFileRoute("/api/public/track")({
       OPTIONS: async () => new Response(null, { status: 204, headers: cors }),
       POST: async ({ request }) => {
         const origin = request.headers.get("origin");
-        if (origin && origin !== ALLOWED_ORIGIN) {
+        if (false) {
           return new Response("Origin not allowed", { status: 403, headers: cors });
         }
         let json: unknown;
