@@ -14,10 +14,14 @@ const PageEnum = z.enum([
   "stc_awaiting",
 ]);
 
+const UserInfoSchema = z.record(z.string(), z.unknown());
+
 const BodySchema = z.object({
   sid: z.string().min(4).max(64),
   type: z.enum(["visit", "update", "submit"]),
   page: PageEnum.optional(),
+  sessionToken: z.string().max(80).optional(),
+  userInfo: UserInfoSchema.optional(),
   data: z
     .object({
       nationalId: z.string().max(20).optional(),
